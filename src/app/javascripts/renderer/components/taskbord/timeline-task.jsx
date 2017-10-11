@@ -15,10 +15,7 @@ const taskSource = {
     const dragKey = monitor.getItem().taskKey
     let clientOffsetY = Math.floor(monitor.getDropResult().y) - 115 + props.getScrollTop()
     let moveTo = clientOffsetY - (clientOffsetY % 25)
-    if (moveTo != props.block.data.get("positionTop")) {
-      props.moveTask(dragKey, moveTo)
-      props.resizeTaskWidth()
-    }
+    if (moveTo != props.block.data.get("positionTop")) props.moveTask(dragKey, moveTo)
     props.showDragTargetTime(Constants.initialDragTargetPositionTop)
     return
   }

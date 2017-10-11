@@ -2,7 +2,6 @@ import React from 'react';
 import _ from 'lodash';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { DragDropContext } from 'react-dnd';
-import { Raw, Block} from 'slate'
 import * as Constants from '../constants'
 import Task from './timeline-task'
 import Marker from './timeline-marker'
@@ -13,84 +12,64 @@ import * as timelineUtil from '../../../utils/timeline'
 
 const TimelineViewport = class TimelineViewport extends React.Component {
 
-  showDragTargetTime(dragTargetPositionTop){
+  showDragTargetTime(dragTargetPositionTop) {
     this.props.updateDragTargetPositionTop(dragTargetPositionTop)
   }
 
   /**
    * move a timeline task to droped position.
-   * transform state and call apply method.
    *
    * @param  {String} dragKey
    * @param  {Number} moveTo
    */
 
-  moveTask(dragKey, moveTo){
-    let dragBlock
-    this.props.taskList.document.nodes.map((block) => {
-      if (block.key == dragKey) dragBlock = block
-    })
-
-    if (dragBlock.data.get("positionTop") == moveTo) return
-
-    let dropBlock = Block.create({
-      data: dragBlock.data.set("positionTop", moveTo),
-      isVoid: dragBlock.isVoid,
-      key: dragBlock.key,
-      nodes: dragBlock.nodes,
-      type: dragBlock.type
-    })
-
-    let transform = this.props.taskList.transform()
-      .removeNodeByKey(dragKey)
-      .insertNodeByKey(this.props.taskList.document.key, this.props.taskList.document.nodes.indexOf(dragBlock), dropBlock)
-
-    // apply.
-    this.props.onUpdateTask(transform.apply())
+  moveTask(dragKey, moveTo) {
+    let nextTaskList
+    const prevTaskList = this.props.taskList
+    nextTaskList = timelineUtil.setTaskPositionTop(prevTaskList, dragKey, moveTo)
+    if (nextTaskList != prevTaskList) {
+      this.props.onUpdateTask(
+        this.getWidthResizedTaskList(nextTaskList)
+      )
+    }
   }
 
   /**
    * resize a timeline task height from task's required time.
-   * transform state and call apply method.
    *
    * @param  {String} dragKey
    * @param  {Number} requiredTime
    */
 
-  resizeTaskHeight(dragKey, requiredTime){
-    let dragBlock
-    this.props.taskList.document.nodes.map((block) => {
-      if (block.key == dragKey) dragBlock = block
-    })
-
-    if (dragBlock.data.get("requiredTime") == requiredTime) return
-
-    let resizedBlock = Block.create({
-      data: dragBlock.data.set("requiredTime", requiredTime),
-      isVoid: dragBlock.isVoid,
-      key: dragBlock.key,
-      nodes: dragBlock.nodes,
-      type: dragBlock.type
-    })
-
-    let transform = this.props.taskList.transform()
-      .removeNodeByKey(dragKey)
-      .insertNodeByKey(this.props.taskList.document.key, this.props.taskList.document.nodes.indexOf(dragBlock), resizedBlock)
-
-    // apply.
-    this.props.onUpdateTask(transform.apply())
+  resizeTaskHeight(dragKey, requiredTime) {
+    let nextTaskList
+    const prevTaskList = this.props.taskList
+    nextTaskList = timelineUtil.setTaskRequiredTime(prevTaskList, dragKey, requiredTime)
+    if (nextTaskList != prevTaskList) this.props.onUpdateTask(nextTaskList)
   }
 
   /**
    * resize same position tasks width in timeline when task position or task height is changed.
-   * transform state and call apply method.
    *
    */
 
-  resizeTaskWidth(){
+  resizeTaskWidth() {
+    this.props.onUpdateTask(this.getWidthResizedTaskList(this.props.taskList))
+  }
+
+  /**
+   * get with resized tasklist.
+   *
+   * @param {State} targetTaskList
+   * @return {State}
+   *
+   */
+
+  getWidthResizedTaskList(targetTaskList){
+    targetTaskList = targetTaskList || this.props.taskList
     let displayTasks = []
     let breaker = false
-    let taskList = this.props.taskList
+    let taskList = targetTaskList
     // get display task array
     taskList.document.nodes.map((block, i) => {
       if (block.type == "separator") breaker = true;
@@ -124,44 +103,11 @@ const TimelineViewport = class TimelineViewport extends React.Component {
       // resize same position task width
       if (resizeWidthKeyList.length >= 1) {
         _.each(resizeWidthKeyList, (key, i) => {
-          taskList = this.setTaskWidth(taskList, key, 55/resizeWidthKeyList.length, i)
+          taskList = timelineUtil.setTaskWidth(taskList, key, 55/resizeWidthKeyList.length, i)
         })
       }
     })
-    this.props.onUpdateTask(taskList)
-  }
-
-  /**
-   * set task width data to state obj.
-   * @param {State} taskList
-   * @param {String} taskKey
-   * @param {Number} width
-   * @param {Number} index
-   * @return {State}
-   */
-
-  setTaskWidth(taskList, taskKey, width, index) {
-    let taskBlock
-    taskList.document.nodes.map((block) => {
-      if (block.key == taskKey) taskBlock = block
-    })
-
-    if (taskBlock.data.get("width", 0) == width) return taskList
-
-    let resizedBlock = Block.create({
-      data: taskBlock.data.set("width", width).set("marginLeft", width * index),
-      isVoid: taskBlock.isVoid,
-      key: taskBlock.key,
-      nodes: taskBlock.nodes,
-      type: taskBlock.type
-    })
-
-    let transform = taskList.transform()
-      .removeNodeByKey(taskKey)
-      .insertNodeByKey(taskList.document.key, taskList.document.nodes.indexOf(taskBlock), resizedBlock)
-
-    // apply.
-    return transform.apply()
+    return taskList
   }
 
   /**
