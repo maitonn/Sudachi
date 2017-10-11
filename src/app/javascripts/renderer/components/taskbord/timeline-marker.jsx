@@ -14,8 +14,8 @@ const markerTarget = {
       let nextRequiredTime = ((Math.floor(tmp / 25) + 1) * 30) + monitor.getItem().initialReqiredTime
       if (nextRequiredTime <= 0) nextRequiredTime = 30
       props.resizeTaskHeight(taskKey, nextRequiredTime)
-    } else {
-      if (props.dragTargetPositionTop == props.positionTop) return
+    }
+    if (props.dragTargetPositionTop != props.positionTop) {
       props.showDragTargetTime(props.positionTop)
     }
   },

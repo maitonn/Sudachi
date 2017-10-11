@@ -24,7 +24,10 @@ const timelineTaskDragPreview = class TimelineTask extends React.Component {
       height: height.toString() + 'px',
       width: width.toString() + '%',
       boxShadow: '3px 3px 10px -2px #8a8a8a',
-      border: 'none'
+      borderTop: '1px solid white',
+      borderRight: 'none',
+      borderBottom: 'none',
+      borderLeft: '1px solid white'
     };
     return taskStyle
   }

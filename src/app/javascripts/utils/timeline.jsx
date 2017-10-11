@@ -2,6 +2,19 @@ import * as Constants from '../renderer/components/constants';
 import { Block} from 'slate';
 
 /**
+ * get task position bottom.
+ *
+ * @param  {Block} block
+ * @param  {requiredTime} requiredTime optional value
+ * @return {Number}
+ */
+
+export const getPositionBottom = (block, requiredTime) => {
+  requiredTime = requiredTime || block.data.get("requiredTime")
+  return block.data.get("positionTop") + ((requiredTime / 60) * Constants.heightPerHour)
+}
+
+/**
  * caliculated time from position top
  *
  * @param  {Number} positionTop

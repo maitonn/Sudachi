@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react';
 import { DragSource, DropTarget } from "react-dnd";
 import * as Constants from '../constants';
+import * as timelineUtil from '../../../utils/timeline';
 import Resizer from './timeline-resizer';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
@@ -12,12 +13,13 @@ const taskSource = {
     };
   },
   endDrag(props, monitor) {
-    const dragKey = monitor.getItem().taskKey
-    let clientOffsetY = Math.floor(monitor.getDropResult().y) - 115 + props.getScrollTop()
-    let moveTo = clientOffsetY - (clientOffsetY % 25)
-    if (moveTo != props.block.data.get("positionTop")) props.moveTask(dragKey, moveTo)
+    if (monitor.getDropResult() !== null) {
+      const dragKey = monitor.getItem().taskKey
+      let clientOffsetY = Math.floor(monitor.getDropResult().y) - 115 + props.getScrollTop()
+      let moveTo = clientOffsetY - (clientOffsetY % 25)
+      if (moveTo != props.block.data.get("positionTop")) props.moveTask(dragKey, moveTo)
+    }
     props.showDragTargetTime(Constants.initialDragTargetPositionTop)
-    return
   }
 }
 
@@ -32,6 +34,10 @@ const taskTarget = {
       let nextRequiredTime = ((Math.floor(tmp / 25) + 1) * 30) + monitor.getItem().initialReqiredTime
       if (nextRequiredTime <= 0) nextRequiredTime = 30
       if (nextRequiredTime == props.block.data.get("requiredTime")) return
+      let taskBottomPosition = timelineUtil.getPositionBottom(props.block, nextRequiredTime)
+      if(props.dragTargetPositionTop != taskBottomPosition) {
+        props.showDragTargetTime(taskBottomPosition)
+      }
       props.resizeTaskHeight(taskKey, nextRequiredTime)
     } else {
       let clientOffsetY = Math.floor(monitor.getClientOffset().y) - 115 + props.getScrollTop()
@@ -107,6 +113,7 @@ const timelineTask = class TimelineTask extends React.Component {
           taskKey={this.props.taskKey}
           block={this.props.block}
           resizeTaskWidth={this.props.resizeTaskWidth}
+          showDragTargetTime={this.props.showDragTargetTime}
         />
       </div>
     ))

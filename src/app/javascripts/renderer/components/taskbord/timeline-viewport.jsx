@@ -2,13 +2,13 @@ import React from 'react';
 import _ from 'lodash';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { DragDropContext } from 'react-dnd';
-import * as Constants from '../constants'
-import Task from './timeline-task'
-import Marker from './timeline-marker'
-import TimelineCustomDragLayer from './timeline-custom-drag-layer'
-import moment from 'moment'
+import * as Constants from '../constants';
+import Task from './timeline-task';
+import Marker from './timeline-marker';
+import TimelineCustomDragLayer from './timeline-custom-drag-layer';
+import moment from 'moment';
 import { findDOMNode } from 'react-dom';
-import * as timelineUtil from '../../../utils/timeline'
+import * as timelineUtil from '../../../utils/timeline';
 
 const TimelineViewport = class TimelineViewport extends React.Component {
 
@@ -83,7 +83,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
     _.each(displayTasks, (block, i) => {
       taskPositionRange[block.key] = [
         block.data.get("positionTop"),
-        block.data.get("positionTop") + ((block.data.get("requiredTime") / 60) * Constants.heightPerHour)
+        timelineUtil.getPositionBottom(block)
       ]
     })
     let prTop, prBottom, tprTop, tprBottom
