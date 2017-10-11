@@ -12,7 +12,7 @@ const resizerSource = {
     };
   },
   endDrag(props, monitor) {
-    props.resizeTimelineWidth()
+    props.resizeTaskWidth()
   }
 }
 

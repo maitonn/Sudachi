@@ -40,7 +40,7 @@
     }
     tr td.tv-task {
       width: 100%;
-      .task {
+      .task, div > div > .task {
         cursor: move;
         position: absolute;
         left: -1px;
@@ -58,9 +58,7 @@
           span { font-weight: 400 }
         }
         &.alert {
-          top:575px;
           background-color:$caution;
-          border-radius: 0px;
           padding: 0px;
           &:hover { background-color: $caution-over }
         }

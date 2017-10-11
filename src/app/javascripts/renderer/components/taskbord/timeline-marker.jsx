@@ -13,7 +13,7 @@ const markerTarget = {
       if (tmp <= 0) tmp -= 25
       let nextRequiredTime = ((Math.floor(tmp / 25) + 1) * 30) + monitor.getItem().initialReqiredTime
       if (nextRequiredTime <= 0) nextRequiredTime = 30
-      props.resizeTask(taskKey, nextRequiredTime)
+      props.resizeTaskHeight(taskKey, nextRequiredTime)
     } else {
       if (props.dragTargetPositionTop == props.positionTop) return
       props.showDragTargetTime(props.positionTop)

@@ -6,16 +6,10 @@ import { Raw, Block} from 'slate'
 import * as Constants from '../constants'
 import Task from './timeline-task'
 import Marker from './timeline-marker'
+import TimelineCustomDragLayer from './timeline-custom-drag-layer'
 import moment from 'moment'
 import { findDOMNode } from 'react-dom';
 import * as timelineUtil from '../../../utils/timeline'
-
-const Operations = {
-  UP: 'up',
-  DOWN: 'down'
-}
-
-const PositionRange = Constants.positionRange()
 
 const TimelineViewport = class TimelineViewport extends React.Component {
 
@@ -23,7 +17,14 @@ const TimelineViewport = class TimelineViewport extends React.Component {
     this.props.updateDragTargetPositionTop(dragTargetPositionTop)
   }
 
-  // when drag task and drop to timeline marker
+  /**
+   * move a timeline task to droped position.
+   * transform state and call apply method.
+   *
+   * @param  {String} dragKey
+   * @param  {Number} moveTo
+   */
+
   moveTask(dragKey, moveTo){
     let dragBlock
     this.props.taskList.document.nodes.map((block) => {
@@ -48,7 +49,15 @@ const TimelineViewport = class TimelineViewport extends React.Component {
     this.props.onUpdateTask(transform.apply())
   }
 
-  resizeTask(dragKey, requiredTime){
+  /**
+   * resize a timeline task height from task's required time.
+   * transform state and call apply method.
+   *
+   * @param  {String} dragKey
+   * @param  {Number} requiredTime
+   */
+
+  resizeTaskHeight(dragKey, requiredTime){
     let dragBlock
     this.props.taskList.document.nodes.map((block) => {
       if (block.key == dragKey) dragBlock = block
@@ -72,7 +81,13 @@ const TimelineViewport = class TimelineViewport extends React.Component {
     this.props.onUpdateTask(transform.apply())
   }
 
-  resizeTimelineWidth(){
+  /**
+   * resize same position tasks width in timeline when task position or task height is changed.
+   * transform state and call apply method.
+   *
+   */
+
+  resizeTaskWidth(){
     let displayTasks = []
     let breaker = false
     let taskList = this.props.taskList
@@ -94,7 +109,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
     })
     let prTop, prBottom, tprTop, tprBottom
     // position range roop
-    _.each(PositionRange, (pr) => {
+    _.each(Constants.positionRange(), (pr) => {
       let resizeWidthKeyList = []
       prTop = pr[0]
       prBottom = pr[1]
@@ -109,14 +124,23 @@ const TimelineViewport = class TimelineViewport extends React.Component {
       // resize same position task width
       if (resizeWidthKeyList.length >= 1) {
         _.each(resizeWidthKeyList, (key, i) => {
-          taskList = this.resizeTaskWidth(taskList, key, 55/resizeWidthKeyList.length, i)
+          taskList = this.setTaskWidth(taskList, key, 55/resizeWidthKeyList.length, i)
         })
       }
     })
     this.props.onUpdateTask(taskList)
   }
 
-  resizeTaskWidth(taskList, taskKey, width, index) {
+  /**
+   * set task width data to state obj.
+   * @param {State} taskList
+   * @param {String} taskKey
+   * @param {Number} width
+   * @param {Number} index
+   * @return {State}
+   */
+
+  setTaskWidth(taskList, taskKey, width, index) {
     let taskBlock
     taskList.document.nodes.map((block) => {
       if (block.key == taskKey) taskBlock = block
@@ -140,96 +164,21 @@ const TimelineViewport = class TimelineViewport extends React.Component {
     return transform.apply()
   }
 
-  // when drag task and drop to other task.
-  sortTask(dragKey, hoverKey){
-    let dragBlock
-    let hoverBlock
-    this.props.taskList.document.nodes.map((block) => {
-      if (block.key == dragKey) dragBlock = block
-      if (block.key == hoverKey) hoverBlock = block
-    })
-
-    let dragPositionTop = dragBlock.data.get("positionTop")
-    let hoverPositionTop = hoverBlock.data.get("positionTop")
-    let moveTargetList = []
-    let operation
-
-    if (dragPositionTop > hoverPositionTop) {
-      operation = Operations.UP
-    } else {
-      operation = Operations.DOWN
-    }
-
-    // push target block list.
-    this.props.taskList.document.nodes.map((block, i) => {
-      let blockPositionTop = block.data.get("positionTop")
-      if (operation == Operations.UP) {
-        if (blockPositionTop < dragPositionTop && blockPositionTop >= hoverPositionTop) {
-          moveTargetList.push({block: block, index: i})
-        }
-      }
-      if (operation == Operations.DOWN) {
-        if (blockPositionTop > dragPositionTop && blockPositionTop <= hoverPositionTop) {
-          moveTargetList.push({block: block, index: i})
-        }
-      }
-    })
-
-    // move target blocks.
-    let dragBlockHeight = (Constants.heightPerHour * dragBlock.data.get("requiredTime", 60) / 60)
-    let transform = this.props.taskList.transform()
-    let targetEdge = operation == Operations.UP ? 9999999999999 : 0
-    let dropPositionTop
-
-    moveTargetList.forEach((target) => {
-      let newPositionTop
-      if (operation == Operations.UP) {
-        newPositionTop = target.block.data.get("positionTop") + dragBlockHeight
-        if (targetEdge > newPositionTop) {
-          targetEdge = newPositionTop
-          dropPositionTop = targetEdge - (Constants.heightPerHour * dragBlock.data.get("requiredTime") / 60)
-        }
-      }
-      if (operation == Operations.DOWN) {
-        newPositionTop = target.block.data.get("positionTop") - dragBlockHeight
-        if (targetEdge < newPositionTop) {
-          targetEdge = newPositionTop
-          dropPositionTop = targetEdge + (Constants.heightPerHour * target.block.data.get("requiredTime") / 60)
-        }
-      }
-      let targetBlock = Block.create({
-        data: target.block.data.set("positionTop", newPositionTop),
-        isVoid: target.block.isVoid,
-        key: target.block.key,
-        nodes: target.block.nodes,
-        type: target.block.type
-      })
-      transform = transform
-        .removeNodeByKey(target.block.key)
-        .insertNodeByKey(this.props.taskList.document.key, target.index, targetBlock)
-    })
-
-    // move drop block.
-    let dropBlock = Block.create({
-      data: dragBlock.data.set("positionTop", dropPositionTop),
-      isVoid: dragBlock.isVoid,
-      key: dragBlock.key,
-      nodes: dragBlock.nodes,
-      type: dragBlock.type
-    })
-    transform = transform
-      .removeNodeByKey(dragKey)
-      .insertNodeByKey(this.props.taskList.document.key, this.props.taskList.document.nodes.indexOf(dragBlock), dropBlock)
-
-    // apply.
-    this.props.onUpdateTask(transform.apply())
-  }
+  /**
+   * check today's timeline or not.
+   * @return {Boolean}
+   */
 
   isTodayTimeline(){
     return this.props.date == moment().format("YYYYMMDD")
   }
 
-  scrollTop(){
+  /**
+   * get scrollTop of timeline DOM.
+   * @return {Number}
+   */
+
+  getScrollTop(){
     return findDOMNode(this.refs.timeline).scrollTop
   }
 
@@ -257,9 +206,9 @@ const TimelineViewport = class TimelineViewport extends React.Component {
           dragTargetPositionTop={this.props.dragTargetPositionTop}
           showDragTargetTime={this.showDragTargetTime.bind(this)}
           moveTask={this.moveTask.bind(this)}
-          resizeTask={this.resizeTask.bind(this)}
-          resizeTimelineWidth={this.resizeTimelineWidth.bind(this)}
-          scrollTop={this.scrollTop.bind(this)}
+          resizeTaskHeight={this.resizeTaskHeight.bind(this)}
+          resizeTaskWidth={this.resizeTaskWidth.bind(this)}
+          getScrollTop={this.getScrollTop.bind(this)}
         />
       )
     })
@@ -292,7 +241,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
                       className={i % 2 == 0 ? "markercell marker-border" : "markercell"}
                       showDragTargetTime={this.showDragTargetTime.bind(this)}
                       moveTask={this.moveTask.bind(this)}
-                      resizeTask={this.resizeTask.bind(this)}
+                      resizeTaskHeight={this.resizeTaskHeight.bind(this)}
                       dragTargetPositionTop={this.props.dragTargetPositionTop}
                       positionTop={i*25}
                       style={style}
@@ -300,6 +249,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
                   );
                 })}
                 {this.renderTasks()}
+                <TimelineCustomDragLayer />
                 <div
                   className="nowmarker"
                   style={{
