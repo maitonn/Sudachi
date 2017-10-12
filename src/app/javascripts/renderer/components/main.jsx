@@ -1,4 +1,5 @@
 import React from 'react';
+import firebase from 'firebase';
 import _ from 'lodash';
 import moment from 'moment';
 import { Raw } from 'slate';
@@ -11,11 +12,14 @@ import TimelineViewport from './taskbord/timeline-viewport';
 import CalendarViewport from './taskbord/calendar-viewport';
 import TaskViewport from './taskbord/task-viewport';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import * as Constants from './constants'
-import * as dateListUtil from '../../utils/date-list'
-import * as taskListUtil from '../../utils/task-list'
+import * as Constants from './constants';
+import * as dateListUtil from '../../utils/date-list';
+import * as taskListUtil from '../../utils/task-list';
 injectTapEventPlugin();
 
+const user = firebase.auth().currentUser;
+const userDisplayName = user.displayName;
+const userEmail = user.email;
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
 const today = moment().format("YYYYMMDD")
 const storage = new taskListStorage()
@@ -25,7 +29,7 @@ const taskBoardDefaultState = {
   showHowto: false,
   nextTaskPositionTop: Constants.initialPositionTop,
   markerPositionTop: Constants.markerPositionTop(),
-  showHistory: false,
+  showHistory: true,
   dateList: dateListUtil.getDateListWithTaskCount(Constants.initialDateList())
 }
 
@@ -183,6 +187,8 @@ class TaskBoard extends React.Component {
               hideHistoryMenu={this.hideHistoryMenu.bind(this)}
               dateList={this.state.dateList}
               showHistory={this.state.showHistory}
+              userDisplayName={userDisplayName}
+              userEmail={userEmail}
             />
             <TaskViewport
               date={this.state.date}

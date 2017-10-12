@@ -106,13 +106,11 @@ const CalendarViewport = class CalendarViewport extends React.Component {
           <Drawer
             open={this.props.showHistory}
             containerStyle={{overflow: "hidden"}}>
-            <div style={{textAlign: "right"}}>
-              <FlatButton
-                label="close ✕"
-                onTouchTap={this.props.hideHistoryMenu.bind(this)}
-              />
+            <div className="account">
+              <div className="user-display-name">{this.props.userDisplayName}</div>
+              <span className="user-email">{this.props.userEmail}</span>
             </div>
-            <div style={{overflow: "scroll", height: "calc(100% - 36px)"}}>
+            <div style={{overflow: "scroll", height: "calc(100% - 110px)"}}>
               {this.renderMenuItem()}
             </div>
           </Drawer>
