@@ -7,7 +7,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: 50%;
+  height: 70%;
   span {
     display: block;
     text-align: center;
@@ -20,13 +20,20 @@
     width: 28%;
     margin: auto;
   }
-  #by_email, #by_google {
-    width: 80%;
+  #sign-in-by-email, #sign-up-by-email {
+    width: 88%;
     margin: auto;
   }
   .form-group {
     display: block;
-    margin: 10px auto;
+    margin: 15px auto;
+  }
+  .form-inline {
+    .form-group {
+      display: inline-block;
+      width: 49.2%;
+      margin: auto;
+    }
   }
   .button-group {
     margin: 25px auto;

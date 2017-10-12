@@ -13,25 +13,40 @@
       <div id="login">
         <img class="sudachi-logo" src="../images/sudachi.png" alt="sudachi-logo">
         <span>Sign in to Sudachi</span>
-        <section id="by_email">
+        <section id="sign-in-by-email">
           <div class="form-group">
-            <input type="email" placeholder="email" class="form-control" id="email">
+            <input type="email" placeholder="email" class="form-control" id="sign-in-email">
           </div>
           <div class="form-group">
-            <input type="password" placeholder="password" class="form-control" id="password">
+            <input type="password" placeholder="password" class="form-control" id="sign-in-password">
           </div>
           <div class="button-group">
             <button type="submit" class="btn btn-primary" id="sign-in">Sign in</button>
-            <button type="submit" class="btn btn-default" id="sign-up">Sign up</button>
           </div>
         </section>
-        <!-- <p class="separator">- or -</p>
-        <section id="by_google">
-          <div class="btn-google" id="sign-in-with-google">
-            <img src="../images/btn_google_signin_dark.png" alt="signin_with_google">
+        <p class="separator">- or -</p>
+        <section id="sign-up-by-email">
+          <div class="form-group">
+            <input type="email" placeholder="email" class="form-control" id="email">
           </div>
-          <div class="g-signin2" data-onsuccess="onSignIn"></div>
-        </section> -->
+          <form class="form-inline">
+            <div class="form-group">
+              <input type="text" placeholder="first name" class="form-control" id="first-name">
+            </div>
+            <div class="form-group">
+              <input type="text" placeholder="last name" class="form-control" id="last-name">
+            </div>
+          </form>
+          <div class="form-group">
+            <input type="password" placeholder="password" class="form-control" id="password">
+          </div>
+          <div class="form-group">
+            <input type="password" placeholder="password(confirm)" class="form-control" id="password-confirm">
+          </div>
+          <div class="button-group">
+            <button type="submit" class="btn btn-default" id="sign-up">Create New Account</button>
+          </div>
+        </section>
       </div>
     </div>
     <script>
