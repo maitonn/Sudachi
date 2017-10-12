@@ -58,6 +58,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
         <MenuItem
           key={i}
           innerDivStyle={innerDivStyle}
+          style={{fontSize: '14px'}}
           onTouchTap={this.updateDate.bind(this)}>
           {date.dateFull}
           <div style={{display: "none"}}>{date.date}</div>
@@ -149,7 +150,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
           />
           <Drawer
             open={this.props.showHistory}
-            containerStyle={{overflow: "hidden"}}>
+            containerStyle={{overflow: "hidden", width: '208px'}}>
             <div className="account">
               <div className="account-main">
                 <div className="user-display-name">{this.props.userDisplayName}</div>
