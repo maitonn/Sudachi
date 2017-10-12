@@ -1,0 +1,52 @@
+#login {
+  width: 440px;
+  margin: auto;
+  vertical-align: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 50%;
+  span {
+    display: block;
+    text-align: center;
+    margin: 20px 0 35px;
+    color: gray;
+    font-size: 22px;
+  }
+  .sudachi-logo {
+    display: block;
+    width: 28%;
+    margin: auto;
+  }
+  #by_email, #by_google {
+    width: 80%;
+    margin: auto;
+  }
+  .form-group {
+    display: block;
+    margin: 10px auto;
+  }
+  .button-group {
+    margin: 25px auto;
+    display: block;
+    text-align: center;
+    button {
+      width: 49%;
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+  .separator {
+    text-align: center;
+    margin: 25px;
+    font-size: 14px;
+  }
+  .btn-google {
+    width: 60%;
+    margin: auto;
+    cursor: pointer;
+    text-align: center;
+  }
+}
