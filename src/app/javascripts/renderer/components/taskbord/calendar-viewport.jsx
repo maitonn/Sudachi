@@ -1,18 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import firebase from 'firebase';
 import moment from 'moment';
 import _ from 'lodash';
 import { Raw } from 'slate';
 import { ipcRenderer } from 'electron';
 import Divider from 'material-ui/Divider';
-import Drawer from 'material-ui/Drawer'
-import MenuItem from 'material-ui/MenuItem'
-import RaiseButton from 'material-ui/RaisedButton'
+import Drawer from 'material-ui/Drawer';
+import MenuItem from 'material-ui/MenuItem';
+import IconMenu from 'material-ui/IconMenu';
+import IconButton from 'material-ui/IconButton';
+import RaiseButton from 'material-ui/RaisedButton';
 import FlatButton from 'material-ui/FlatButton';
 import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import * as dateListUtil from '../../../utils/date-list.jsx'
+import * as dateListUtil from '../../../utils/date-list';
+import loginComponet from '../login';
 
 const CalendarViewport = class CalendarViewport extends React.Component {
 
@@ -94,6 +98,46 @@ const CalendarViewport = class CalendarViewport extends React.Component {
     return items
   }
 
+  renderDropdownButton(){
+    const onMouseDown = () => {
+      firebase.auth().signOut().then(function() {
+        const root = document.getElementById('root');
+        ReactDOM.render(React.createElement(loginComponet), root);
+      }).catch(function(error) {
+        console.log(error);
+      })
+    }
+    return (
+      <div>
+        <IconMenu
+          iconButtonElement={
+            <IconButton
+              iconClassName="material-icons"
+              style={{
+                marginTop: '-10px'
+              }}>
+              arrow_drop_down
+            </IconButton>
+          }
+          anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+          targetOrigin={{horizontal: 'left', vertical: 'top'}}
+          menuStyle={{ backgroundColor: '#fff' }}
+        >
+          <MenuItem
+            onMouseDown={onMouseDown}
+            primaryText="Sing out"
+            style={{
+              backgroundColor: '#fff',
+              color: '#464646',
+              minHeight: '35px',
+              lineHeight: '35px'
+            }}
+          />
+        </IconMenu>
+      </div>
+    );
+  }
+
   render() {
     return (
       <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
@@ -107,7 +151,10 @@ const CalendarViewport = class CalendarViewport extends React.Component {
             open={this.props.showHistory}
             containerStyle={{overflow: "hidden"}}>
             <div className="account">
-              <div className="user-display-name">{this.props.userDisplayName}</div>
+              <div className="account-main">
+                <div className="user-display-name">{this.props.userDisplayName}</div>
+                {this.renderDropdownButton()}
+              </div>
               <span className="user-email">{this.props.userEmail}</span>
             </div>
             <div style={{overflow: "scroll", height: "calc(100% - 110px)"}}>

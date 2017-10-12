@@ -27,12 +27,21 @@
   .form-group {
     display: block;
     margin: 15px auto;
+    input {
+      height: 38px;
+      font-size: 16px;
+      color: #353535;
+      width: 100%;
+    }
   }
   .form-inline {
     .form-group {
       display: inline-block;
-      width: 49.2%;
+      width: calc((100% - 10px)/2);
       margin: auto;
+    }
+    .form-group:first-child {
+      margin-right: 10px;
     }
   }
   .button-group {
