@@ -17,9 +17,7 @@ import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
 injectTapEventPlugin();
 
-const user = firebase.auth().currentUser;
-const userDisplayName = user.displayName;
-const userEmail = user.email;
+let currentUser = ''
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
 const today = moment().format("YYYYMMDD")
 const storage = new taskListStorage()
@@ -173,6 +171,10 @@ class TaskBoard extends React.Component {
     setInterval(() => { this.updateMarker() }, 60000)
   }
 
+  componentWillMount(){
+    currentUser = firebase.auth().currentUser;
+  }
+
   render() {
     return (
       <div id="task-board" className="wrapper">
@@ -187,8 +189,8 @@ class TaskBoard extends React.Component {
               hideHistoryMenu={this.hideHistoryMenu.bind(this)}
               dateList={this.state.dateList}
               showHistory={this.state.showHistory}
-              userDisplayName={userDisplayName}
-              userEmail={userEmail}
+              userDisplayName={currentUser.displayName}
+              userEmail={currentUser.email}
             />
             <TaskViewport
               date={this.state.date}
