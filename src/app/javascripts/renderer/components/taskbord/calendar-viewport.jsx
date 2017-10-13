@@ -100,8 +100,10 @@ const CalendarViewport = class CalendarViewport extends React.Component {
   }
 
   renderDropdownButton(){
+    let _props = this.props;
     const onMouseDown = () => {
       firebase.auth().signOut().then(function() {
+        _props.onUpdateCrrentUser(null);
         const root = document.getElementById('root');
         ReactDOM.render(React.createElement(loginComponet), root);
       }).catch(function(error) {
@@ -153,10 +155,10 @@ const CalendarViewport = class CalendarViewport extends React.Component {
             containerStyle={{overflow: "hidden", width: '208px'}}>
             <div className="account">
               <div className="account-main">
-                <div className="user-display-name">{this.props.userDisplayName}</div>
+                <div className="user-display-name">{this.props.currentUser ? this.props.currentUser.displayName : ''}</div>
                 {this.renderDropdownButton()}
               </div>
-              <span className="user-email">{this.props.userEmail}</span>
+              <span className="user-email">{this.props.currentUser ? this.props.currentUser.email : ''}</span>
             </div>
             <div style={{overflow: "scroll", height: "calc(100% - 110px)"}}>
               {this.renderMenuItem()}

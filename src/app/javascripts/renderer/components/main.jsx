@@ -19,13 +19,14 @@ import * as taskListUtil from '../../utils/task-list';
 injectTapEventPlugin();
 
 // Initialize Cloud Firestore through Firebase
-let db = firebase.firestore();
+const db = firebase.firestore();
 
-let currentUser = ''
+let intervalIds = [];
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
 const today = moment().format("YYYYMMDD")
 const storage = new taskListStorage()
 const taskBoardDefaultState = {
+  currentUser: null,
   date: today,
   taskList: taskListUtil.getTaskListByDate(moment().format("YYYYMMDD")),
   showHowto: false,
@@ -37,6 +38,10 @@ const taskBoardDefaultState = {
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
   switch (action.type) {
+    case 'UPDATE_CURRENT_USER':
+      return {
+        currentUser: action.currentUser
+      };
     case 'UPDATE_TASK':
       return {
         taskList: action.taskList,
@@ -87,6 +92,10 @@ class TaskBoard extends React.Component {
   dispatch(action){
     console.log(action.type)
     this.setState(prevState => taskBoardReducer(prevState, action))
+  }
+
+  updateCurrentUser(currentUser){
+    this.dispatch({ type: 'UPDATE_CURRENT_USER', currentUser: currentUser });
   }
 
   updateTask(taskList){
@@ -172,11 +181,17 @@ class TaskBoard extends React.Component {
   }
 
   componentDidMount(){
-    setInterval(() => { this.updateMarker() }, 60000);
+    intervalIds.push(setInterval(() => { this.updateMarker() }, 60000));
   }
 
   componentWillMount(){
-    currentUser = firebase.auth().currentUser;
+    this.updateCurrentUser(firebase.auth().currentUser);
+  }
+
+  componentWillUnmount(){
+    _.each(intervalIds, (id) => {
+      clearInterval(id);
+    });
   }
 
   render() {
@@ -187,14 +202,14 @@ class TaskBoard extends React.Component {
             <CalendarViewport
               date={this.state.date}
               taskList={this.state.taskList}
+              onUpdateCrrentUser={this.updateCurrentUser.bind(this)}
               onUpdateDate={this.updateDate.bind(this)}
               onUpdateDateList={this.updateDateList.bind(this)}
               showHistoryMenu={this.showHistoryMenu.bind(this)}
               hideHistoryMenu={this.hideHistoryMenu.bind(this)}
               dateList={this.state.dateList}
               showHistory={this.state.showHistory}
-              userDisplayName={currentUser.displayName}
-              userEmail={currentUser.email}
+              currentUser={this.state.currentUser}
             />
             <TaskViewport
               date={this.state.date}
