@@ -41,8 +41,7 @@ const loginForm = class LoginForm extends React.Component {
       })
       .then(function(){
         // after updated user's profile, add document to users collection.
-        db.collection("users").add({
-          uid: user.uid,
+        db.collection('users').doc(user.uid).set({
           displayName: displayName
         })
         .then(function(docRef) {
