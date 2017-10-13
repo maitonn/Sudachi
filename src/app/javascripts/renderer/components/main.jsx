@@ -1,5 +1,6 @@
 import React from 'react';
 import firebase from 'firebase';
+import 'firebase/firestore';
 import _ from 'lodash';
 import moment from 'moment';
 import { Raw } from 'slate';
@@ -16,6 +17,9 @@ import * as Constants from './constants';
 import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
 injectTapEventPlugin();
+
+// Initialize Cloud Firestore through Firebase
+let db = firebase.firestore();
 
 let currentUser = ''
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
@@ -168,7 +172,7 @@ class TaskBoard extends React.Component {
   }
 
   componentDidMount(){
-    setInterval(() => { this.updateMarker() }, 60000)
+    setInterval(() => { this.updateMarker() }, 60000);
   }
 
   componentWillMount(){

@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase';
+import 'firebase/firestore';
+const db = firebase.firestore();
 
 const loginForm = class LoginForm extends React.Component {
 
@@ -30,15 +32,22 @@ const loginForm = class LoginForm extends React.Component {
       return;
     }
     firebase.auth().createUserWithEmailAndPassword(email, password).then(function(){
-      alert('User created successfully.')
       const user = firebase.auth().currentUser;
       user.updateProfile({
         displayName: displayName
       }).then(function(){
-        alert('User info updated successfully.');
-        const MainContent = require('./main');
-        const root = document.getElementById('root');
-        ReactDOM.render(React.createElement(MainContent), root);
+        db.collection("users").add({
+          uid: user.uid,
+          displayName: displayName
+        })
+        .then(function(docRef) {
+          const MainContent = require('./main');
+          const root = document.getElementById('root');
+          ReactDOM.render(React.createElement(MainContent), root);
+        })
+        .catch(function(error) {
+          console.log("Error adding document: ", error)
+        });
       }).catch(function(error){
         console.log(error);
       });
