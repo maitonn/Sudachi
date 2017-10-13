@@ -10,13 +10,25 @@ var config = {
 const firebase = require("firebase");
 firebase.initializeApp(config);
 
-(() => {
+const loadRootContent = (content) => {
   require('babel-register')(
     { plugins: 'transform-react-jsx' }
   );
   const React = require('react');
   const ReactDOM = require('react-dom');
-  const MainContent = require('./components/login');
   const root = document.getElementById('root');
-  ReactDOM.render(React.createElement(MainContent), root);
+  const rootContent = require('./components/' + content)
+  ReactDOM.render(React.createElement(rootContent), root);
+}
+
+(() => {
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      // User is signed in.
+      loadRootContent('main');
+    } else {
+      // No user is signed in.
+      loadRootContent('login');
+    }
+  });
 })();
