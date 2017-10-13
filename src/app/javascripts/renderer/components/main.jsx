@@ -182,6 +182,23 @@ class TaskBoard extends React.Component {
 
   componentDidMount(){
     intervalIds.push(setInterval(() => { this.updateMarker() }, 60000));
+    let prevTaskList, nextTaskList;
+    intervalIds.push(setInterval(() => {
+      nextTaskList = this.state.taskList;
+      if(this.state.currentUser && nextTaskList != prevTaskList) {
+        db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs').doc(this.state.date).set({
+          content: JSON.stringify(Raw.serialize(this.state.taskList).document)
+        })
+        .then(function() {
+          prevTaskList = nextTaskList;
+          console.log('SAVE TO FIRESTORE');
+        })
+        .catch(function(error) {
+          console.log(error)
+          console.log('ERROR SAVING TO FIRESTORE');
+        });
+      }
+    }, 10000));
   }
 
   componentWillMount(){
