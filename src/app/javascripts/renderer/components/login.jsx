@@ -31,16 +31,22 @@ const loginForm = class LoginForm extends React.Component {
       alert('Password does not match. Please confirm your password.');
       return;
     }
-    firebase.auth().createUserWithEmailAndPassword(email, password).then(function(){
+    // create user with email.
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(function(){
       const user = firebase.auth().currentUser;
+      // after created user, update user's profile.
       user.updateProfile({
         displayName: displayName
-      }).then(function(){
+      })
+      .then(function(){
+        // after updated user's profile, add document to users collection.
         db.collection("users").add({
           uid: user.uid,
           displayName: displayName
         })
         .then(function(docRef) {
+          // after added document, load editor content.
           const MainContent = require('./main');
           const root = document.getElementById('root');
           ReactDOM.render(React.createElement(MainContent), root);
@@ -48,10 +54,12 @@ const loginForm = class LoginForm extends React.Component {
         .catch(function(error) {
           console.log("Error adding document: ", error)
         });
-      }).catch(function(error){
+      })
+      .catch(function(error){
         console.log(error);
       });
-    }).catch(function(error){
+    })
+    .catch(function(error){
       if(error != null) {
         console.log(error);
         alert(error.message);
