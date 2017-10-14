@@ -1,7 +1,9 @@
 import React, { PropTypes } from 'react';
 import { DragSource, DropTarget } from "react-dnd";
 import * as Constants from '../constants';
+import * as timelineUtil from '../../../utils/timeline';
 import Resizer from './timeline-resizer';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 
 const taskSource = {
   beginDrag(props) {
@@ -11,7 +13,13 @@ const taskSource = {
     };
   },
   endDrag(props, monitor) {
-    props.resizeTimelineWidth()
+    if (monitor.getDropResult() !== null) {
+      const dragKey = monitor.getItem().taskKey
+      let clientOffsetY = Math.floor(monitor.getDropResult().y) - 115 + props.getScrollTop()
+      let moveTo = clientOffsetY - (clientOffsetY % 25)
+      if (moveTo != props.block.data.get("positionTop")) props.moveTask(dragKey, moveTo)
+    }
+    props.showDragTargetTime(Constants.initialDragTargetPositionTop)
   }
 }
 
@@ -26,20 +34,27 @@ const taskTarget = {
       let nextRequiredTime = ((Math.floor(tmp / 25) + 1) * 30) + monitor.getItem().initialReqiredTime
       if (nextRequiredTime <= 0) nextRequiredTime = 30
       if (nextRequiredTime == props.block.data.get("requiredTime")) return
-      props.resizeTask(taskKey, nextRequiredTime)
+      let taskBottomPosition = timelineUtil.getPositionBottom(props.block, nextRequiredTime)
+      if(props.dragTargetPositionTop != taskBottomPosition) {
+        props.showDragTargetTime(taskBottomPosition)
+      }
+      props.resizeTaskHeight(taskKey, nextRequiredTime)
     } else {
-      const dragKey = monitor.getItem().taskKey
-      let clientOffsetY = Math.floor(monitor.getClientOffset().y) - 80 + props.scrollTop()
+      let clientOffsetY = Math.floor(monitor.getClientOffset().y) - 115 + props.getScrollTop()
       let moveTo = clientOffsetY - (clientOffsetY % 25)
-      if (moveTo == props.block.data.get("positionTop")) return
-      props.moveTask(dragKey, moveTo)
+      if (moveTo == props.dragTargetPositionTop) return
+      props.showDragTargetTime(moveTo)
     }
+  },
+  drop(props, monitor, component) {
+    return monitor.getClientOffset()
   }
 }
 
 function sourceCollect(connect, monitor){
   return {
     connectDragSource: connect.dragSource(),
+    connectDragPreview: connect.dragPreview(),
     isDragging: monitor.isDragging()
   }
 }
@@ -52,46 +67,53 @@ function targetCollect(connect){
 
 const timelineTask = class TimelineTask extends React.Component {
 
-  setTaskClass(block) {
+  setTaskClass(data) {
     let taskClass = "task"
-    if ( block.data.get("done", false) == true) {
+    if ( data.get("done", false) == true) {
       taskClass += " done"
-    } else if ( block.data.get("positionTop", 500) >= 925 ) {
+    } else if ( data.get("positionTop", 500) >= 925 ) {
       taskClass += " alert"
     }
-    let top = block.data.get("positionTop", 500)
-    let height = Constants.heightPerHour * block.data.get("requiredTime", 60) / 60
-    if (this.props.nowMarkerTop > (top + height) && !block.data.get("done")) taskClass += " past"
+    let top = data.get("positionTop", 500)
+    let height = Constants.heightPerHour * data.get("requiredTime", 60) / 60
+    if (this.props.nowMarkerTop > (top + height) && !data.get("done")) taskClass += " past"
     return taskClass
   }
 
-  setTaskStyle(block) {
-    let top = block.data.get("positionTop", 500)
-    let height = Constants.heightPerHour * block.data.get("requiredTime", 60) / 60
-    let width = block.data.get("width", 55)
-    let marginLeft = block.data.get("marginLeft", 0)
+  setTaskStyle(data, isDragging) {
+    let top = data.get("positionTop", 500)
+    let height = Constants.heightPerHour * data.get("requiredTime", 60) / 60
+    let width = data.get("width", 55)
+    let marginLeft = data.get("marginLeft", 0)
     let taskStyle = {
       top: top.toString() + 'px',
       height: height.toString() + 'px',
       width: width.toString() + '%',
-      marginLeft: marginLeft.toString() + '%'
+      marginLeft: marginLeft.toString() + '%',
+      opacity: isDragging ? 0.4 : 1
     };
     return taskStyle
   }
 
+  componentDidMount(){
+    this.props.connectDragPreview(getEmptyImage(), {
+      captureDraggingState: false,
+    })
+  }
+
   render() {
-    const { isDragging, connectDragSource, connectDropTarget, text } = this.props
+    const { isDragging, connectDragSource, connectDragPreview, connectDropTarget, text } = this.props
 
     return connectDragSource(connectDropTarget(
       <div
-        className={this.setTaskClass(this.props.block)}
-        style={this.setTaskStyle(this.props.block)}>
+        className={this.setTaskClass(this.props.block.data)}
+        style={this.setTaskStyle(this.props.block.data, isDragging)}>
         <span>{this.props.block.text}</span>
         <Resizer
           taskKey={this.props.taskKey}
           block={this.props.block}
-          resizeTask={this.props.resizeTask}
-          resizeTimelineWidth={this.props.resizeTimelineWidth}
+          resizeTaskWidth={this.props.resizeTaskWidth}
+          showDragTargetTime={this.props.showDragTargetTime}
         />
       </div>
     ))

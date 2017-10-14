@@ -33,6 +33,7 @@ const taskBoardDefaultState = {
   taskList: Raw.deserialize(initialTaskList, { terse: true }),
   showHowto: false,
   nextTaskPositionTop: Constants.initialPositionTop,
+  dragTargetPositionTop: Constants.initialDragTargetPositionTop,
   markerPositionTop: Constants.markerPositionTop(),
   showHistory: true,
   dateList: Constants.initialDateList()
@@ -58,6 +59,10 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
         dateList: action.dateList,
         showHowto: false
       };
+    case 'UPDATE_DRAG_TARGET_POSITION_TOP':
+      return {
+        dragTargetPositionTop: action.dragTargetPositionTop
+      };
     case 'UPDATE_MARKER':
       return {
         markerPositionTop: Constants.markerPositionTop()
@@ -65,7 +70,7 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
     case 'UPDATE_DATE_LIST':
       return {
         dateList: action.dateList
-      }
+      };
     case 'SHOW_HOWTO':
       return {
         taskList: HowtoContents,
@@ -168,6 +173,10 @@ class TaskBoard extends React.Component {
 
   updateDateList(dateList){
     this.dispatch({ type: 'UPDATE_DATE_LIST', dateList: dateList })
+  }
+
+  updateDragTargetPositionTop(dragTargetPositionTop){
+    this.dispatch({ type: 'UPDATE_DRAG_TARGET_POSITION_TOP', dragTargetPositionTop: dragTargetPositionTop})
   }
 
   updateMarker(){
@@ -327,6 +336,8 @@ class TaskBoard extends React.Component {
             <TimelineViewport
               date={this.state.date}
               taskList={this.state.taskList}
+              dragTargetPositionTop={this.state.dragTargetPositionTop}
+              updateDragTargetPositionTop={this.updateDragTargetPositionTop.bind(this)}
               markerPositionTop={this.state.markerPositionTop}
               onUpdateTask={this.updateTask.bind(this)}
             />
