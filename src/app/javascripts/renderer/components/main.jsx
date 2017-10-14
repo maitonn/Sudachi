@@ -35,7 +35,7 @@ const taskBoardDefaultState = {
   nextTaskPositionTop: Constants.initialPositionTop,
   markerPositionTop: Constants.markerPositionTop(),
   showHistory: true,
-  dateList: dateListUtil.getDateListWithTaskCount(Constants.initialDateList())
+  dateList: Constants.initialDateList()
 }
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
@@ -189,7 +189,8 @@ class TaskBoard extends React.Component {
       nextTaskList = this.state.taskList;
       if(this.state.currentUser && nextTaskList != prevTaskList) {
         db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs').doc(this.state.date).set({
-          content: JSON.stringify(Raw.serialize(this.state.taskList).document)
+          content: JSON.stringify(Raw.serialize(this.state.taskList).document),
+          date: this.state.date
         })
         .then(function() {
           prevTaskList = nextTaskList;
@@ -216,7 +217,8 @@ class TaskBoard extends React.Component {
         this.updateTask(Raw.deserialize(JSON.parse(doc.data().content), { terse: true }));
       } else {
         dailyDocsRef.doc(today).set({
-          content: JSON.stringify(Raw.serialize(this.state.taskList).document)
+          content: JSON.stringify(Raw.serialize(this.state.taskList).document),
+          date: today
         })
         .then(function() {
           log.info('SAVE TO FIRESTORE');
@@ -229,8 +231,31 @@ class TaskBoard extends React.Component {
       }
     })
     .catch(function(error) {
-      log.info("ERROR RETRIEVING FROM FIRESTORE", error);
+      log.error("ERROR RETRIEVING FROM FIRESTORE", error);
     });
+
+    // initialize dateList
+    const dateList = this.state.dateList
+    dailyDocsRef.where("date", ">=", dateList[0].date)
+      .where("date", "<=", dateList[dateList.length - 1].date)
+      .limit(30)
+      .orderBy("date")
+      .get()
+      .then((querySnapshot) => {
+        let dateListWithTaskCount = dateList;
+        querySnapshot.forEach((doc) => {
+          log.info("RETRIEVE FROM FIRESTORE, DOC ID: ", doc.id);
+          dateListWithTaskCount = dateListUtil.getDateListWithTaskCountByDate(
+            dateListWithTaskCount,
+            Raw.deserialize(JSON.parse(doc.data().content), { terse: true }),
+            doc.data().date
+          );
+        });
+        this.updateDateList(dateListWithTaskCount);
+      })
+      .catch((error) => {
+        log.error("ERROR RETRIEVING FROM FIRESTORE", error);
+      });
   }
 
   componentWillUnmount(){
