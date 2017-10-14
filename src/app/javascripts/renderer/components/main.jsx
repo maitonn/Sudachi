@@ -111,14 +111,36 @@ class TaskBoard extends React.Component {
   }
 
   updateDate(date){
-    let nextTaskList = taskListUtil.getTaskListByDate(date)
-    this.dispatch({
-      type: 'UPDATE_DATE',
-      date: date,
-      taskList: nextTaskList,
-      nextTaskPositionTop: this.getNextTaskPositionTop(nextTaskList, date),
-      dateList: this.getNextDateList(nextTaskList, date)
-    })
+    const dailyDocsRef = db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs');
+    // retrieve next taskList.
+    dailyDocsRef.doc(date).get().then((doc) => {
+      let nextTaskList;
+      if (doc.exists) {
+        log.info('RETRIEVE DOCUMENT ID: ', doc.id);
+        nextTaskList = Raw.deserialize(JSON.parse(doc.data().content), { terse: true });
+      } else {
+        nextTaskList = Raw.deserialize(initialTaskList, { terse: true });
+        dailyDocsRef.doc(date).set({
+          content: JSON.stringify(Raw.serialize(this.state.taskList).document),
+          date: today
+        })
+        .then(function() {
+          log.info('SAVE TO FIRESTORE');
+        })
+        .catch(function(error) {
+          log.error(error);
+          log.error('ERROR SAVING TO FIRESTORE');
+        });
+        log.info('NO SUCH DOCUMENT, CREATE DOC: ', this.state.date);
+      }
+      this.dispatch({
+        type: 'UPDATE_DATE',
+        date: date,
+        taskList: nextTaskList,
+        nextTaskPositionTop: this.getNextTaskPositionTop(nextTaskList, date),
+        dateList: this.getNextDateList(nextTaskList, date)
+      });
+    });
   }
 
   updateDateAndTask(date, taskList){
