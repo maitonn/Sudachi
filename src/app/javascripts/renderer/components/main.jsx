@@ -1,6 +1,7 @@
 import React from 'react';
 import firebase from 'firebase';
 import 'firebase/firestore';
+import log from 'electron-log';
 import _ from 'lodash';
 import moment from 'moment';
 import { Raw } from 'slate';
@@ -192,11 +193,11 @@ class TaskBoard extends React.Component {
         })
         .then(function() {
           prevTaskList = nextTaskList;
-          console.log('SAVE TO FIRESTORE');
+          log.info('SAVE TO FIRESTORE');
         })
         .catch(function(error) {
-          console.log(error)
-          console.log('ERROR SAVING TO FIRESTORE');
+          log.error(error);
+          log.error('ERROR SAVING TO FIRESTORE');
         });
       }
     }, 10000));
@@ -208,18 +209,27 @@ class TaskBoard extends React.Component {
     this.updateCurrentUser(currentUser);
 
     // initialize taskList
-    const initialTaskListDocRefs = db.collection('users').doc(currentUser.uid).collection('dailyDocs').doc(today);
-    const _this = this;
-    initialTaskListDocRefs.get().then(function(doc) {
+    const dailyDocsRef = db.collection('users').doc(currentUser.uid).collection('dailyDocs');
+    dailyDocsRef.doc(today).get().then((doc) => {
       if (doc.exists) {
-        console.log('RETRIEVE FROM FIRESTORE');
-        _this.updateTask(Raw.deserialize(JSON.parse(doc.data().content), { terse: true }));
+        log.info('RETRIEVE FROM FIRESTORE');
+        this.updateTask(Raw.deserialize(JSON.parse(doc.data().content), { terse: true }));
       } else {
-        console.log('No such document.');
+        dailyDocsRef.doc(today).set({
+          content: JSON.stringify(Raw.serialize(this.state.taskList).document)
+        })
+        .then(function() {
+          log.info('SAVE TO FIRESTORE');
+        })
+        .catch(function(error) {
+          log.error(error)
+          log.error('ERROR SAVING TO FIRESTORE');
+        });
+        log.info('NO SUCH DOCUMENT, CREATE DOC: ', this.state.date);
       }
     })
     .catch(function(error) {
-      console.log("ERROR RETRIEVING FROM FIRESTORE", error);
+      log.info("ERROR RETRIEVING FROM FIRESTORE", error);
     });
   }
 

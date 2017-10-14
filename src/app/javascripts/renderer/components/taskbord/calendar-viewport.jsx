@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase';
+import log from 'electron-log';
 import moment from 'moment';
 import _ from 'lodash';
 import { Raw } from 'slate';
@@ -107,7 +108,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
         const root = document.getElementById('root');
         ReactDOM.render(React.createElement(loginComponet), root);
       }).catch(function(error) {
-        console.log(error);
+        log.error(error);
       })
     }
     return (
