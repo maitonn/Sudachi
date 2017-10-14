@@ -112,7 +112,20 @@ class TaskBoard extends React.Component {
 
   updateDate(date){
     const dailyDocsRef = db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs');
-    // retrieve next taskList.
+
+    // store prev taskList.
+    dailyDocsRef.doc(this.state.date).set({
+      content: JSON.stringify(Raw.serialize(this.state.taskList).document),
+      date: this.state.date
+    })
+    .then(function() {
+      log.info('SAVE TO FIRESTORE')
+    })
+    .catch(function(error) {
+      log.error('ERROR SAVING TO FIRESTORE', error)
+    });
+
+    // retrieve next taskList by date.
     dailyDocsRef.doc(date).get().then((doc) => {
       let nextTaskList;
       if (doc.exists) {
@@ -128,8 +141,7 @@ class TaskBoard extends React.Component {
           log.info('SAVE TO FIRESTORE');
         })
         .catch(function(error) {
-          log.error(error);
-          log.error('ERROR SAVING TO FIRESTORE');
+          log.error('ERROR SAVING TO FIRESTORE', error);
         });
         log.info('NO SUCH DOCUMENT, CREATE DOC: ', this.state.date);
       }
@@ -219,8 +231,7 @@ class TaskBoard extends React.Component {
           log.info('SAVE TO FIRESTORE');
         })
         .catch(function(error) {
-          log.error(error);
-          log.error('ERROR SAVING TO FIRESTORE');
+          log.error('ERROR SAVING TO FIRESTORE', error);
         });
       }
     }, 10000));
@@ -246,8 +257,7 @@ class TaskBoard extends React.Component {
           log.info('SAVE TO FIRESTORE');
         })
         .catch(function(error) {
-          log.error(error)
-          log.error('ERROR SAVING TO FIRESTORE');
+          log.error('ERROR SAVING TO FIRESTORE', error);
         });
         log.info('NO SUCH DOCUMENT, CREATE DOC: ', this.state.date);
       }
