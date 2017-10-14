@@ -6,6 +6,7 @@ import moment from 'moment';
 import { Raw } from 'slate';
 import { ipcRenderer } from 'electron';
 import Howto from '../../../data/howto.json';
+import initialTaskList from '../../../data/initial.json';
 import taskListStorage from '../../modules/task-list-storage';
 import Header from './header';
 import Footer from './footer';
@@ -28,7 +29,7 @@ const storage = new taskListStorage()
 const taskBoardDefaultState = {
   currentUser: null,
   date: today,
-  taskList: taskListUtil.getTaskListByDate(moment().format("YYYYMMDD")),
+  taskList: Raw.deserialize(initialTaskList, { terse: true }),
   showHowto: false,
   nextTaskPositionTop: Constants.initialPositionTop,
   markerPositionTop: Constants.markerPositionTop(),
@@ -202,7 +203,24 @@ class TaskBoard extends React.Component {
   }
 
   componentWillMount(){
-    this.updateCurrentUser(firebase.auth().currentUser);
+    // initialize currentUser
+    const currentUser = firebase.auth().currentUser;
+    this.updateCurrentUser(currentUser);
+
+    // initialize taskList
+    const initialTaskListDocRefs = db.collection('users').doc(currentUser.uid).collection('dailyDocs').doc(today);
+    const _this = this;
+    initialTaskListDocRefs.get().then(function(doc) {
+      if (doc.exists) {
+        console.log('RETRIEVE FROM FIRESTORE');
+        _this.updateTask(Raw.deserialize(JSON.parse(doc.data().content), { terse: true }));
+      } else {
+        console.log('No such document.');
+      }
+    })
+    .catch(function(error) {
+      console.log("ERROR RETRIEVING FROM FIRESTORE", error);
+    });
   }
 
   componentWillUnmount(){
