@@ -1,13 +1,16 @@
 import React from 'react';
 import { Raw } from 'slate';
+import firebase from 'firebase';
+import log from 'electron-log';
 import TaskEditor from './task-editor';
 import moment from 'moment';
 import { dialog, remote } from 'electron';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FlatButton from 'material-ui/FlatButton';
-import taskListStorage from '../../../modules/task-list-storage';
-import * as taskListUtil from '../../../utils/task-list'
-const storage = new taskListStorage()
+import * as taskListUtil from '../../../utils/task-list';
+
+// Initialize Cloud Firestore through Firebase
+const db = firebase.firestore();
 
 const TaskViewport = class TaskViewport extends React.Component {
 
@@ -33,19 +36,32 @@ const TaskViewport = class TaskViewport extends React.Component {
     }, (buttonIndex) => {
       if (buttonIndex === 0) {
         const tomorrow = moment(this.props.date).add(1, 'd').format("YYYYMMDD")
-        const tomorrowTaskList = taskListUtil.getTaskListByDate(tomorrow)
         const taskListOnlyDoneTask = taskListUtil.getTaskListOnlyDoneTask(this.props.taskList)
         const taskListWithoutDoneTask = taskListUtil.getTaskListWithoutDoneTask(this.props.taskList)
         this.props.storeTaskListToFirestore(this.props.date, taskListOnlyDoneTask)
-        let transform = tomorrowTaskList.transform()
-        taskListWithoutDoneTask.document.nodes.forEach((block, index) => {
-          transform = transform.insertNodeByKey(
-            tomorrowTaskList.document.key,
-            (tomorrowTaskList.document.nodes.size + index),
-            block
-          )
+
+        db.collection('users').doc(this.props.currentUser.uid).collection('dailyDocs').doc(tomorrow).get().then((doc) => {
+          let tomorrowTaskList;
+          if (doc.exists) {
+            log.info('RETRIEVE DOCUMENT ID: ', doc.id);
+            tomorrowTaskList = Raw.deserialize(JSON.parse(doc.data().content), { terse: true });
+          } else {
+            log.info('NO SUCH DOCUMENT, ID: ', date);
+            tomorrowTaskList = Raw.deserialize(initialTaskList, { terse: true });
+          }
+          let transform = tomorrowTaskList.transform();
+          taskListWithoutDoneTask.document.nodes.forEach((block, index) => {
+            transform = transform.insertNodeByKey(
+              tomorrowTaskList.document.key,
+              (tomorrowTaskList.document.nodes.size + index),
+              block
+            );
+          });
+          this.props.onUpdateDateAndTask(tomorrow, transform.apply());
         })
-        this.props.onUpdateDateAndTask(tomorrow, transform.apply())
+        .catch((error) => {
+          log.error("ERROR RETRIEVING FROM FIRESTORE", error);
+        });
       }
     })
   }

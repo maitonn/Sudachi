@@ -8,7 +8,6 @@ import { Raw } from 'slate';
 import { ipcRenderer } from 'electron';
 import Howto from '../../../data/howto.json';
 import initialTaskList from '../../../data/initial.json';
-import taskListStorage from '../../modules/task-list-storage';
 import Header from './header';
 import Footer from './footer';
 import TimelineViewport from './taskbord/timeline-viewport';
@@ -26,7 +25,6 @@ const db = firebase.firestore();
 let intervalIds = [];
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
 const today = moment().format("YYYYMMDD")
-const storage = new taskListStorage()
 const taskBoardDefaultState = {
   currentUser: null,
   date: today,
@@ -111,8 +109,7 @@ class TaskBoard extends React.Component {
       taskList: taskList,
       nextTaskPositionTop: this.getNextTaskPositionTop(taskList, this.state.date),
       dateList: this.getNextDateList(taskList, this.state.date)
-    })
-    if (! this.state.showHowto) storage.set(this.state.date, Raw.serialize(taskList).document)
+    });
   }
 
   updateDate(date){
@@ -138,6 +135,9 @@ class TaskBoard extends React.Component {
         nextTaskPositionTop: this.getNextTaskPositionTop(nextTaskList, date),
         dateList: this.getNextDateList(nextTaskList, date)
       });
+    })
+    .catch((error) => {
+      log.error("ERROR RETRIEVING FROM FIRESTORE", error);
     });
   }
 
@@ -148,8 +148,7 @@ class TaskBoard extends React.Component {
       taskList: taskList,
       nextTaskPositionTop: this.getNextTaskPositionTop(taskList, date),
       dateList: this.getNextDateList(taskList, date)
-    })
-    if (! this.state.showHowto) storage.set(date, Raw.serialize(taskList).document)
+    });
   }
 
   updateDateList(dateList, dateFrom, dateTo){
@@ -321,6 +320,7 @@ class TaskBoard extends React.Component {
               onClickShowHowto={this.showHowtoContent.bind(this)}
               showHowto={this.state.showHowto}
               markerPositionTop={this.state.markerPositionTop}
+              currentUser={this.state.currentUser}
             />
             <TimelineViewport
               date={this.state.date}
