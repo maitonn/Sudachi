@@ -5,6 +5,47 @@ import { ipcRenderer } from 'electron';
 import * as taskListUtil from './task-list';
 
 /**
+ * create initial date
+ *
+ * @param  {String} date YYYYMMDD
+ * @return {Object}
+ */
+
+export const createDate = (date) => {
+  return ({
+    date: moment(date).format("YYYYMMDD"),
+    dateFull: moment(date).format("YYYY.M.D ddd"),
+    task: 0,
+    taskDone: 0,
+    complete: false
+  });
+}
+
+/**
+ * get date array object.
+ *
+ * @param  {String} dateFrom YYYYMMDD
+ * @param  {Number} to
+ * @param  {Boolean} countDown
+ * @return {Array}           [YYYYMMDD]
+ */
+
+export const getDateRange = (dateFrom, to, countDown) => {
+  let dateRange = [];
+  countDown = countDown || false;
+  if( ! countDown ) {
+    _.each(_.range(0, to), (d, i) => {
+      dateRange.push(moment(dateFrom).add(+d, 'd').format("YYYYMMDD"));
+    });
+  } else {
+    _.each(_.range(0, to), (d, i) => {
+      dateRange.push(moment(dateFrom).add(-d, 'd').format("YYYYMMDD"));
+    });
+  }
+  return dateRange;
+}
+
+/**
  * get array dateList with task count.
  *
  * @param  {Array} dateList

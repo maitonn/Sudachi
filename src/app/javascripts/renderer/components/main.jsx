@@ -171,8 +171,30 @@ class TaskBoard extends React.Component {
     if (! this.state.showHowto) storage.set(date, Raw.serialize(taskList).document)
   }
 
-  updateDateList(dateList){
-    this.dispatch({ type: 'UPDATE_DATE_LIST', dateList: dateList })
+  updateDateList(dateList, dateFrom, dateTo){
+    dateTo = dateTo || dateFrom;
+    const currentUser = firebase.auth().currentUser;
+    db.collection('users').doc(currentUser.uid).collection('dailyDocs')
+      .where("date", ">=", dateFrom)
+      .where("date", "<=", dateTo)
+      .limit(30)
+      .orderBy("date")
+      .get()
+      .then((querySnapshot) => {
+        let dateListWithTaskCount = dateList;
+        querySnapshot.forEach((doc) => {
+          log.info("RETRIEVE FROM FIRESTORE, DOC ID: ", doc.id);
+          dateListWithTaskCount = dateListUtil.getDateListWithTaskCountByDate(
+            dateListWithTaskCount,
+            Raw.deserialize(JSON.parse(doc.data().content), { terse: true }),
+            doc.data().date
+          );
+        });
+        this.dispatch({ type: 'UPDATE_DATE_LIST', dateList: dateListWithTaskCount });
+      })
+      .catch((error) => {
+        log.error("ERROR RETRIEVING FROM FIRESTORE", error);
+      });
   }
 
   updateDragTargetPositionTop(dragTargetPositionTop){
@@ -277,26 +299,7 @@ class TaskBoard extends React.Component {
 
     // initialize dateList
     const dateList = this.state.dateList
-    dailyDocsRef.where("date", ">=", dateList[0].date)
-      .where("date", "<=", dateList[dateList.length - 1].date)
-      .limit(30)
-      .orderBy("date")
-      .get()
-      .then((querySnapshot) => {
-        let dateListWithTaskCount = dateList;
-        querySnapshot.forEach((doc) => {
-          log.info("RETRIEVE FROM FIRESTORE, DOC ID: ", doc.id);
-          dateListWithTaskCount = dateListUtil.getDateListWithTaskCountByDate(
-            dateListWithTaskCount,
-            Raw.deserialize(JSON.parse(doc.data().content), { terse: true }),
-            doc.data().date
-          );
-        });
-        this.updateDateList(dateListWithTaskCount);
-      })
-      .catch((error) => {
-        log.error("ERROR RETRIEVING FROM FIRESTORE", error);
-      });
+    this.updateDateList(dateList, dateList[0].date, dateList[dateList.length - 1].date)
   }
 
   componentWillUnmount(){

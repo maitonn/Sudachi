@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import firebase from 'firebase';
 import 'firebase/firestore';
+import log from 'electron-log';
 const db = firebase.firestore();
 
 const loginForm = class LoginForm extends React.Component {
@@ -15,7 +16,7 @@ const loginForm = class LoginForm extends React.Component {
       ReactDOM.render(React.createElement(MainContent), root);
     }).catch(function(error) {
       if(error != null) {
-        console.log(error);
+        log.error(error);
         alert(error.message);
         return;
       }
@@ -51,16 +52,16 @@ const loginForm = class LoginForm extends React.Component {
           ReactDOM.render(React.createElement(MainContent), root);
         })
         .catch(function(error) {
-          console.log("Error adding document: ", error)
+          log.error("Error adding document: ", error)
         });
       })
       .catch(function(error){
-        console.log(error);
+        log.error(error);
       });
     })
     .catch(function(error){
       if(error != null) {
-        console.log(error);
+        log.error(error);
         alert(error.message);
         return;
       }

@@ -16,6 +16,7 @@ import FlatButton from 'material-ui/FlatButton';
 import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import * as Constants from '../constants';
 import * as dateListUtil from '../../../utils/date-list';
 import loginComponet from '../login';
 
@@ -28,25 +29,20 @@ const CalendarViewport = class CalendarViewport extends React.Component {
   }
 
   clickMoreDown(e){
-    let dateList = this.props.dateList
-    let startDate = dateList[dateList.length - 1].date
-    let date
-    _.map(_.range(1, 5), (d, i) => {
-      date = moment(startDate).add(+d, 'd').format("YYYYMMDD")
-      dateList.push(dateListUtil.getDateWithTaskCount(date))
-    })
-    this.props.onUpdateDateList(dateList)
+    let dateList = this.props.dateList;
+    let dateFrom = moment(dateList[dateList.length - 1].date).add(1, 'd').format('YYYYMMDD');
+    const dateRange = dateListUtil.getDateRange(dateFrom, Constants.createDateCountByMoreButton - 1)
+    _.each(dateRange, (date) => { dateList.push(dateListUtil.createDate(date)) });
+    this.props.onUpdateDateList(dateList, dateFrom, dateRange[dateRange.length - 1]);
   }
 
   clickMoreUp(e){
     let dateList = this.props.dateList
-    let startDate = dateList[0].date
-    let date
-    _.map(_.range(1, 5), (d, i) => {
-      date = moment(startDate).add(-d, 'd').format("YYYYMMDD")
-      dateList.unshift(dateListUtil.getDateWithTaskCount(date))
-    })
-    this.props.onUpdateDateList(dateList)
+    let dateTo = moment(dateList[0].date).add(-1, 'd').format('YYYYMMDD');
+    const countDown = true;
+    let dateRange = dateListUtil.getDateRange(dateTo, Constants.createDateCountByMoreButton - 1, countDown)
+    _.each(dateRange, (date) => { dateList.unshift(dateListUtil.getDateWithTaskCount(date)) });
+    this.props.onUpdateDateList(dateList, dateRange[dateRange.length - 1], dateTo);
   }
 
   renderMenuItem() {
