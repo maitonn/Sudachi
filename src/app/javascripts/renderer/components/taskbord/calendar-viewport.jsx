@@ -41,7 +41,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
     let dateTo = moment(dateList[0].date).add(-1, 'd').format('YYYYMMDD');
     const countDown = true;
     let dateRange = dateListUtil.getDateRange(dateTo, Constants.createDateCountByMoreButton - 1, countDown)
-    _.each(dateRange, (date) => { dateList.unshift(dateListUtil.getDateWithTaskCount(date)) });
+    _.each(dateRange, (date) => { dateList.unshift(dateListUtil.createDate(date)) });
     this.props.onUpdateDateList(dateList, dateRange[dateRange.length - 1], dateTo);
   }
 
