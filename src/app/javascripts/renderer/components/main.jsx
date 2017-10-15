@@ -119,16 +119,7 @@ class TaskBoard extends React.Component {
     const dailyDocsRef = db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs');
 
     // store prev taskList.
-    dailyDocsRef.doc(this.state.date).set({
-      content: JSON.stringify(Raw.serialize(this.state.taskList).document),
-      date: this.state.date
-    })
-    .then(function() {
-      log.info('SAVE TO FIRESTORE')
-    })
-    .catch(function(error) {
-      log.error('ERROR SAVING TO FIRESTORE', error)
-    });
+    this.storeTaskListToFirestore(this.state.date, this.state.taskList)
 
     // retrieve next taskList by date.
     dailyDocsRef.doc(date).get().then((doc) => {
@@ -137,18 +128,8 @@ class TaskBoard extends React.Component {
         log.info('RETRIEVE DOCUMENT ID: ', doc.id);
         nextTaskList = Raw.deserialize(JSON.parse(doc.data().content), { terse: true });
       } else {
+        log.info('NO SUCH DOCUMENT, ID: ', date);
         nextTaskList = Raw.deserialize(initialTaskList, { terse: true });
-        dailyDocsRef.doc(date).set({
-          content: JSON.stringify(Raw.serialize(this.state.taskList).document),
-          date: today
-        })
-        .then(function() {
-          log.info('SAVE TO FIRESTORE');
-        })
-        .catch(function(error) {
-          log.error('ERROR SAVING TO FIRESTORE', error);
-        });
-        log.info('NO SUCH DOCUMENT, CREATE DOC: ', this.state.date);
       }
       this.dispatch({
         type: 'UPDATE_DATE',
@@ -217,6 +198,19 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'HIDE_HISTORY' })
   }
 
+  storeTaskListToFirestore(date, taskList){
+    db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs').doc(date).set({
+      content: JSON.stringify(Raw.serialize(taskList).document),
+      date: date
+    })
+    .then(function() {
+      log.info('SAVE TO FIRESTORE, DOC ID: ', date);
+    })
+    .catch(function(error) {
+      log.error('ERROR SAVING TO FIRESTORE', error);
+    });
+  }
+
   getNextTaskPositionTop(taskList, date){
     let bottom = 450
     let requiredTime = 0
@@ -252,18 +246,9 @@ class TaskBoard extends React.Component {
     let prevTaskList, nextTaskList;
     intervalIds.push(setInterval(() => {
       nextTaskList = this.state.taskList;
-      if(this.state.currentUser && nextTaskList != prevTaskList) {
-        db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs').doc(this.state.date).set({
-          content: JSON.stringify(Raw.serialize(this.state.taskList).document),
-          date: this.state.date
-        })
-        .then(function() {
-          prevTaskList = nextTaskList;
-          log.info('SAVE TO FIRESTORE');
-        })
-        .catch(function(error) {
-          log.error('ERROR SAVING TO FIRESTORE', error);
-        });
+      if((! this.state.showHowto) && this.state.currentUser && nextTaskList != prevTaskList) {
+        this.storeTaskListToFirestore(this.state.date, nextTaskList);
+        prevTaskList = nextTaskList;
       }
     }, 10000));
   }
@@ -332,6 +317,7 @@ class TaskBoard extends React.Component {
               onUpdateTask={this.updateTask.bind(this)}
               onUpdateDate={this.updateDate.bind(this)}
               onUpdateDateAndTask={this.updateDateAndTask.bind(this)}
+              storeTaskListToFirestore={this.storeTaskListToFirestore.bind(this)}
               onClickShowHowto={this.showHowtoContent.bind(this)}
               showHowto={this.state.showHowto}
               markerPositionTop={this.state.markerPositionTop}

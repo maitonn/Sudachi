@@ -36,7 +36,7 @@ const TaskViewport = class TaskViewport extends React.Component {
         const tomorrowTaskList = taskListUtil.getTaskListByDate(tomorrow)
         const taskListOnlyDoneTask = taskListUtil.getTaskListOnlyDoneTask(this.props.taskList)
         const taskListWithoutDoneTask = taskListUtil.getTaskListWithoutDoneTask(this.props.taskList)
-        storage.set(this.props.date, Raw.serialize(taskListOnlyDoneTask).document)
+        this.props.storeTaskListToFirestore(this.props.date, taskListOnlyDoneTask)
         let transform = tomorrowTaskList.transform()
         taskListWithoutDoneTask.document.nodes.forEach((block, index) => {
           transform = transform.insertNodeByKey(
