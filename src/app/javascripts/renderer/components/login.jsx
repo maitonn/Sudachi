@@ -3,24 +3,21 @@ import ReactDOM from 'react-dom';
 import firebase from 'firebase';
 import 'firebase/firestore';
 import log from 'electron-log';
+import * as auth from '../infrastructure/auth'
 const db = firebase.firestore();
+
+const renderMainCommponet = () => {
+  const MainContent = require('./main');
+  const root = document.getElementById('root');
+  ReactDOM.render(React.createElement(MainContent), root);
+}
 
 const loginForm = class LoginForm extends React.Component {
 
   onClickSignIn() {
     const email = document.getElementById('sign-in-email').value;
     const password = document.getElementById('sign-in-password').value;
-    firebase.auth().signInWithEmailAndPassword(email, password).then(function() {
-      const MainContent = require('./main');
-      const root = document.getElementById('root');
-      ReactDOM.render(React.createElement(MainContent), root);
-    }).catch(function(error) {
-      if(error != null) {
-        log.error(error);
-        alert(error.message);
-        return;
-      }
-    });
+    auth.signInWithEmailAndPassword(email, password).then(renderMainCommponet);
   }
 
   onClickSignUp() {
@@ -33,33 +30,17 @@ const loginForm = class LoginForm extends React.Component {
       return;
     }
     // create user with email.
-    firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then(
-      (user) => {
-        // after created user, update user's profile.
-        return Promise.all([
-          user.updateProfile({ displayName: displayName }),
-          db.collection('users').doc(user.uid).set({ displayName: displayName })
-        ]);
-      },
-      (error) => {
-        alert(error.message);
-        throw new Error("createUserWithEmailAndPassword error" + error.message);
-      }
-    )
-    .then(
-      () => {
-        // after added document, load editor content.
-        const MainContent = require('./main');
-        const root = document.getElementById('root');
-        ReactDOM.render(React.createElement(MainContent), root);
-      }
-    )
-    .catch(function(errors){
-      _.each(errors, (error) => {
-        log.error(error);
-      });
-    });
+    auth.createUser(email, password, displayName)
+      .then(renderMainCommponet)
+      .catch(
+        (error) => {
+          if (error.type == "createUserWithEmailAndPassword") {
+            alert(error.message);
+          }
+          // TODO error handling.
+          log.error(error);
+        }
+      );
   }
 
   render() {
