@@ -34,37 +34,31 @@ const loginForm = class LoginForm extends React.Component {
     }
     // create user with email.
     firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then(function(){
-      const user = firebase.auth().currentUser;
-      // after created user, update user's profile.
-      user.updateProfile({
-        displayName: displayName
-      })
-      .then(function(){
-        // after updated user's profile, add document to users collection.
-        db.collection('users').doc(user.uid).set({
-          displayName: displayName
-        })
-        .then(function(docRef) {
-          // after added document, load editor content.
-          const MainContent = require('./main');
-          const root = document.getElementById('root');
-          ReactDOM.render(React.createElement(MainContent), root);
-        })
-        .catch(function(error) {
-          log.error("Error adding document: ", error)
-        });
-      })
-      .catch(function(error){
+    .then(
+      (user) => {
+        // after created user, update user's profile.
+        return Promise.all([
+          user.updateProfile({ displayName: displayName }),
+          db.collection('users').doc(user.uid).set({ displayName: displayName })
+        ]);
+      },
+      (error) => {
+        alert(error.message);
+        throw new Error("createUserWithEmailAndPassword error" + error.message);
+      }
+    )
+    .then(
+      () => {
+        // after added document, load editor content.
+        const MainContent = require('./main');
+        const root = document.getElementById('root');
+        ReactDOM.render(React.createElement(MainContent), root);
+      }
+    )
+    .catch(function(errors){
+      _.each(errors, (error) => {
         log.error(error);
       });
-    })
-    .catch(function(error){
-      if(error != null) {
-        log.error(error);
-        alert(error.message);
-        return;
-      }
     });
   }
 
