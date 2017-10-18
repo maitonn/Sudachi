@@ -1,6 +1,7 @@
 import log from 'electron-log';
 import firebase from 'firebase';
 import 'firebase/firestore';
+import * as database from './database';
 
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -10,9 +11,9 @@ export const signInWithEmailAndPassword = (email, password) => {
   return auth.signInWithEmailAndPassword(email, password)
     .catch(
       (error) => {
-        if(error != null) {
-          alert(error.message);
-          log.error(error);
+        throw {
+          type: "signInWithEmailAndPassword",
+          message: error.message
         }
       }
     );
@@ -36,6 +37,6 @@ export const createUser = (email, password, displayName) => {
 export const activateUser = (user, displayName) => {
   return user.updateProfile({ displayName: displayName })
     .then(
-      () => { return usersCollection.doc(user.uid).set({ displayName: displayName }) }
+      () => { return database.createUserDoc(user.uid, displayName) }
     );
 }

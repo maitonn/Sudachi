@@ -17,7 +17,16 @@ const loginForm = class LoginForm extends React.Component {
   onClickSignIn() {
     const email = document.getElementById('sign-in-email').value;
     const password = document.getElementById('sign-in-password').value;
-    auth.signInWithEmailAndPassword(email, password).then(renderMainCommponet);
+    auth.signInWithEmailAndPassword(email, password)
+      .then(renderMainCommponet)
+      .catch(
+        (error) => {
+          if (error.type = "signInWithEmailAndPassword") {
+            alert(error.message);
+          }
+          log.error(error);
+        }
+      );
   }
 
   onClickSignUp() {
