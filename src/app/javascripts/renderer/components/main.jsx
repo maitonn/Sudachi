@@ -259,23 +259,17 @@ class TaskBoard extends React.Component {
     this.updateCurrentUser(currentUser);
 
     // initialize taskList
-    const dailyDocsRef = db.collection('users').doc(currentUser.uid).collection('dailyDocs');
-    dailyDocsRef.doc(today).get().then((doc) => {
-      if (doc.exists) {
-        log.info('RETRIEVE FROM FIRESTORE');
-        this.updateTask(Raw.deserialize(JSON.parse(doc.data().content), { terse: true }));
-      } else {
-        database.setDailyDoc(
-          currentUser.uid,
-          today,
-          JSON.stringify(Raw.serialize(this.state.taskList).document)
-        );
-        log.info('NO SUCH DOCUMENT, CREATE DOC: ', this.state.date);
-      }
-    })
-    .catch(function(error) {
-      log.error("ERROR RETRIEVING FROM FIRESTORE", error);
-    });
+    database.getDailyDoc(currentUser.uid, today)
+      .then(
+        (res) => {
+          this.updateTask(Raw.deserialize(JSON.parse(res.content), { terse: true }));
+        }
+      )
+      .catch(
+        (error) => {
+          this.updateTask(Raw.deserialize(initialTaskList, { terse: true }));
+        }
+      );
 
     // initialize dateList
     const dateList = this.state.dateList
