@@ -114,32 +114,22 @@ class TaskBoard extends React.Component {
   }
 
   updateDate(date){
-    const dailyDocsRef = db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs');
-
     // store prev taskList.
-    this.storeTaskListToFirestore(this.state.date, this.state.taskList)
-
+    database.setDailyDoc(this.state.currentUser.uid, this.state.date, JSON.stringify(Raw.serialize(this.state.taskList).document))
     // retrieve next taskList by date.
-    dailyDocsRef.doc(date).get().then((doc) => {
-      let nextTaskList;
-      if (doc.exists) {
-        log.info('RETRIEVE DOCUMENT ID: ', doc.id);
-        nextTaskList = Raw.deserialize(JSON.parse(doc.data().content), { terse: true });
-      } else {
-        log.info('NO SUCH DOCUMENT, ID: ', date);
-        nextTaskList = Raw.deserialize(initialTaskList, { terse: true });
-      }
-      this.dispatch({
-        type: 'UPDATE_DATE',
-        date: date,
-        taskList: nextTaskList,
-        nextTaskPositionTop: this.getNextTaskPositionTop(nextTaskList, date),
-        dateList: this.getNextDateList(nextTaskList, date)
-      });
-    })
-    .catch((error) => {
-      log.error("ERROR RETRIEVING FROM FIRESTORE", error);
-    });
+    database.getDailyDoc(this.state.currentUser.uid, date)
+      .then(
+        (res) => {
+          let nextTaskList = Raw.deserialize(JSON.parse(res.content), { terse: true })
+          this.dispatch({
+            type: 'UPDATE_DATE',
+            date: date,
+            taskList: nextTaskList,
+            nextTaskPositionTop: this.getNextTaskPositionTop(nextTaskList, date),
+            dateList: this.getNextDateList(nextTaskList, date)
+          });
+        }
+      )
   }
 
   updateDateAndTask(date, taskList){
