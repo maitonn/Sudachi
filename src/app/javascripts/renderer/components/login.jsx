@@ -1,10 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import firebase from 'firebase';
-import 'firebase/firestore';
 import log from 'electron-log';
 import * as auth from '../infrastructure/auth'
-const db = firebase.firestore();
 
 const renderMainCommponet = () => {
   const MainContent = require('./main');
