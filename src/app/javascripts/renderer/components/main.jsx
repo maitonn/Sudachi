@@ -17,6 +17,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import * as Constants from './constants';
 import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
+import * as database from '../infrastructure/database';
 injectTapEventPlugin();
 
 // Initialize Cloud Firestore through Firebase
@@ -264,16 +265,11 @@ class TaskBoard extends React.Component {
         log.info('RETRIEVE FROM FIRESTORE');
         this.updateTask(Raw.deserialize(JSON.parse(doc.data().content), { terse: true }));
       } else {
-        dailyDocsRef.doc(today).set({
-          content: JSON.stringify(Raw.serialize(this.state.taskList).document),
-          date: today
-        })
-        .then(function() {
-          log.info('SAVE TO FIRESTORE');
-        })
-        .catch(function(error) {
-          log.error('ERROR SAVING TO FIRESTORE', error);
-        });
+        database.setDailyDoc(
+          currentUser.uid,
+          today,
+          JSON.stringify(Raw.serialize(this.state.taskList).document)
+        );
         log.info('NO SUCH DOCUMENT, CREATE DOC: ', this.state.date);
       }
     })
