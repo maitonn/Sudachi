@@ -1,10 +1,13 @@
 import log from 'electron-log';
 import firebase from 'firebase';
 import 'firebase/firestore';
+import { Raw } from 'slate';
+import * as taskListUtil from '../../utils/task-list'
 
 const db = firebase.firestore();
 const usersCollection = db.collection('users');
-const initialData = require("../../../data/initial.json");
+const serializedInitialData = require("../../../data/initial.json");
+const initialTaskList = Raw.deserialize(serializedInitialData, { terse: true });
 
 /**
  * create user doc to firestore.
@@ -36,19 +39,19 @@ export const getDailyDocsCollection = (uid) => {
  * save dailydoc to firestore.
  * @param {String} uid
  * @param {String} date    YYYYMMDD
- * @param {String} content
+ * @param {State} taskList
  * @return {Promise}
  */
 
-export const setDailyDoc = (uid, date, content) => {
+export const storeTaskList = (uid, date, taskList) => {
   return getDailyDocsCollection(uid).doc(date).set({
-      content: content,
+      content: taskListUtil.stringifyTaskList(taskList),
       date: date
     })
     .then(
       () => {
         log.info('SAVE DAILYDOC TO FIRESTORE, ID: ', date);
-        return { content: content };
+        return { taskList: taskList };
       }
     )
     .catch(
@@ -63,7 +66,7 @@ export const setDailyDoc = (uid, date, content) => {
  * get dailydoc from firestore.
  * @param  {String} uid
  * @param  {String} date
- * @return {Promise}      
+ * @return {Promise}
  */
 
 export const getDailyDoc = (uid, date) => {
@@ -75,10 +78,10 @@ export const getDailyDoc = (uid, date) => {
           return { content: doc.data().content };
         } else {
           log.info('NO SUCH DOCUMENT, CREATE DOC: ', date);
-          setDailyDoc(uid, date, JSON.stringify(initialData))
+          storeTaskList(uid, date, initialTaskList)
             .then(
               (res) => {
-                return { content: res.content };
+                return { taskList: res.taskList };
               }
             );
         }

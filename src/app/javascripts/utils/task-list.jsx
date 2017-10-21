@@ -5,6 +5,26 @@ const initialData = require("../../data/initial.json")
 const log = require('electron-log');
 
 /**
+ * stringfy tasklist.
+ * @param  {State} taskList
+ * @return {String}
+ */
+
+export const stringifyTaskList = (taskList) => {
+  return JSON.stringify(Raw.serialize(taskList).document);
+}
+
+/**
+ * parse string tasklist to state.
+ * @param  {String} content
+ * @return {State}
+ */
+
+export const parseStringTaskList = (content) => {
+  return Raw.deserialize(JSON.parse(content), { terse: true });
+}
+
+/**
  * whether is done task block or not.
  * @param  {Block}  block
  * @return {Boolean}

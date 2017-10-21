@@ -114,8 +114,12 @@ class TaskBoard extends React.Component {
   }
 
   updateDate(date){
-    // store prev taskList.
-    database.setDailyDoc(this.state.currentUser.uid, this.state.date, JSON.stringify(Raw.serialize(this.state.taskList).document))
+
+    if (this.isStorableTaskList()) {
+      // store prev taskList.
+      database.storeTaskList(this.state.currentUser.uid, this.state.date, this.state.taskList)
+    }
+
     // retrieve next taskList by date.
     database.getDailyDoc(this.state.currentUser.uid, date)
       .then(
@@ -177,6 +181,10 @@ class TaskBoard extends React.Component {
   }
 
   showHowtoContent(){
+    if (this.isStorableTaskList()) {
+      // store prev taskList.
+      database.storeTaskList(this.state.currentUser.uid, this.state.date, this.state.taskList)
+    }
     this.dispatch({ type: 'SHOW_HOWTO' })
   }
 
@@ -186,6 +194,10 @@ class TaskBoard extends React.Component {
 
   hideHistoryMenu(){
     this.dispatch({ type: 'HIDE_HISTORY' })
+  }
+
+  isStorableTaskList(){
+    return ((! this.state.showHowto) && this.state.currentUser !== null)
   }
 
   storeTaskListToFirestore(date, taskList){
@@ -236,8 +248,8 @@ class TaskBoard extends React.Component {
     let prevTaskList, nextTaskList;
     intervalIds.push(setInterval(() => {
       nextTaskList = this.state.taskList;
-      if((! this.state.showHowto) && this.state.currentUser && nextTaskList != prevTaskList) {
-        this.storeTaskListToFirestore(this.state.date, nextTaskList);
+      if(this.isStorableTaskList() && nextTaskList != prevTaskList) {
+        database.storeTaskList(this.state.currentUser.uid, this.state.date, nextTaskList);
         prevTaskList = nextTaskList;
       }
     }, 10000));
