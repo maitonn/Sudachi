@@ -8,6 +8,7 @@ import { dialog, remote } from 'electron';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FlatButton from 'material-ui/FlatButton';
 import * as taskListUtil from '../../../utils/task-list';
+import initialTaskList from '../../../../data/initial.json';
 
 // Initialize Cloud Firestore through Firebase
 const db = firebase.firestore();
@@ -38,7 +39,7 @@ const TaskViewport = class TaskViewport extends React.Component {
         const tomorrow = moment(this.props.date).add(1, 'd').format("YYYYMMDD")
         const taskListOnlyDoneTask = taskListUtil.getTaskListOnlyDoneTask(this.props.taskList)
         const taskListWithoutDoneTask = taskListUtil.getTaskListWithoutDoneTask(this.props.taskList)
-        this.props.storeTaskListToFirestore(this.props.date, taskListOnlyDoneTask)
+        this.props.saveTaskList(this.props.date, taskListOnlyDoneTask)
 
         db.collection('users').doc(this.props.currentUser.uid).collection('dailyDocs').doc(tomorrow).get().then((doc) => {
           let tomorrowTaskList;
@@ -46,7 +47,7 @@ const TaskViewport = class TaskViewport extends React.Component {
             log.info('RETRIEVE DOCUMENT ID: ', doc.id);
             tomorrowTaskList = Raw.deserialize(JSON.parse(doc.data().content), { terse: true });
           } else {
-            log.info('NO SUCH DOCUMENT, ID: ', date);
+            log.info('NO SUCH DOCUMENT, ID: ', tomorrow);
             tomorrowTaskList = Raw.deserialize(initialTaskList, { terse: true });
           }
           let transform = tomorrowTaskList.transform();

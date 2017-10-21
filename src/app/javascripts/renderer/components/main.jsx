@@ -114,12 +114,8 @@ class TaskBoard extends React.Component {
   }
 
   updateDate(date){
-
-    if (this.isStorableTaskList()) {
-      // store prev taskList.
-      database.storeTaskList(this.state.currentUser.uid, this.state.date, this.state.taskList)
-    }
-
+    // save prev taskList.
+    this.saveTaskList(this.state.date, this.state.taskList)
     // retrieve next taskList by date.
     database.getDailyDoc(this.state.currentUser.uid, date)
       .then(
@@ -181,10 +177,7 @@ class TaskBoard extends React.Component {
   }
 
   showHowtoContent(){
-    if (this.isStorableTaskList()) {
-      // store prev taskList.
-      database.storeTaskList(this.state.currentUser.uid, this.state.date, this.state.taskList)
-    }
+    this.saveTaskList(this.state.date, this.state.taskList)
     this.dispatch({ type: 'SHOW_HOWTO' })
   }
 
@@ -200,17 +193,10 @@ class TaskBoard extends React.Component {
     return ((! this.state.showHowto) && this.state.currentUser !== null)
   }
 
-  storeTaskListToFirestore(date, taskList){
-    db.collection('users').doc(this.state.currentUser.uid).collection('dailyDocs').doc(date).set({
-      content: JSON.stringify(Raw.serialize(taskList).document),
-      date: date
-    })
-    .then(function() {
-      log.info('SAVE TO FIRESTORE, DOC ID: ', date);
-    })
-    .catch(function(error) {
-      log.error('ERROR SAVING TO FIRESTORE', error);
-    });
+  saveTaskList(date, taskList){
+    if (this.isStorableTaskList()) {
+      database.storeTaskList(this.state.currentUser.uid, date, taskList)
+    }
   }
 
   getNextTaskPositionTop(taskList, date){
@@ -248,8 +234,8 @@ class TaskBoard extends React.Component {
     let prevTaskList, nextTaskList;
     intervalIds.push(setInterval(() => {
       nextTaskList = this.state.taskList;
-      if(this.isStorableTaskList() && nextTaskList != prevTaskList) {
-        database.storeTaskList(this.state.currentUser.uid, this.state.date, nextTaskList);
+      if(nextTaskList != prevTaskList) {
+        this.saveTaskList(this.state.date, nextTaskList);
         prevTaskList = nextTaskList;
       }
     }, 10000));
@@ -308,7 +294,7 @@ class TaskBoard extends React.Component {
               onUpdateTask={this.updateTask.bind(this)}
               onUpdateDate={this.updateDate.bind(this)}
               onUpdateDateAndTask={this.updateDateAndTask.bind(this)}
-              storeTaskListToFirestore={this.storeTaskListToFirestore.bind(this)}
+              saveTaskList={this.saveTaskList.bind(this)}
               onClickShowHowto={this.showHowtoContent.bind(this)}
               showHowto={this.state.showHowto}
               markerPositionTop={this.state.markerPositionTop}
