@@ -7,7 +7,6 @@ import moment from 'moment';
 import { Raw } from 'slate';
 import { ipcRenderer } from 'electron';
 import Howto from '../../../data/howto.json';
-import initialTaskList from '../../../data/initial.json';
 import Header from './header';
 import Footer from './footer';
 import TimelineViewport from './taskbord/timeline-viewport';
@@ -24,12 +23,14 @@ injectTapEventPlugin();
 const db = firebase.firestore();
 
 let intervalIds = [];
+const serializedInitialData = require("../../../data/initial.json");
+const initialTaskList = Raw.deserialize(serializedInitialData, { terse: true });
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
 const today = moment().format("YYYYMMDD")
 const taskBoardDefaultState = {
   currentUser: null,
   date: today,
-  taskList: Raw.deserialize(initialTaskList, { terse: true }),
+  taskList: initialTaskList,
   showHowto: false,
   nextTaskPositionTop: Constants.initialPositionTop,
   dragTargetPositionTop: Constants.initialDragTargetPositionTop,
@@ -117,10 +118,10 @@ class TaskBoard extends React.Component {
     // save prev taskList.
     this.saveTaskList(this.state.date, this.state.taskList)
     // retrieve next taskList by date.
-    database.getDailyDoc(this.state.currentUser.uid, date)
+    database.fetchTaskList(this.state.currentUser.uid, date)
       .then(
         (res) => {
-          let nextTaskList = Raw.deserialize(JSON.parse(res.content), { terse: true })
+          let nextTaskList = res.taskList
           this.dispatch({
             type: 'UPDATE_DATE',
             date: date,
@@ -247,16 +248,12 @@ class TaskBoard extends React.Component {
     this.updateCurrentUser(currentUser);
 
     // initialize taskList
-    database.getDailyDoc(currentUser.uid, today)
+    database.fetchTaskList(currentUser.uid, today)
       .then(
-        (res) => {
-          this.updateTask(Raw.deserialize(JSON.parse(res.content), { terse: true }));
-        }
+        (res) => { this.updateTask(res.taskList) }
       )
       .catch(
-        (error) => {
-          this.updateTask(Raw.deserialize(initialTaskList, { terse: true }));
-        }
+        (error) => { this.updateTask(initialTaskList) }
       );
 
     // initialize dateList

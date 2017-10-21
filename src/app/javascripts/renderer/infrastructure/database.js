@@ -66,16 +66,16 @@ export const storeTaskList = (uid, date, taskList) => {
  * get dailydoc from firestore.
  * @param  {String} uid
  * @param  {String} date
- * @return {Promise}
+ * @return {Promise} with state object.
  */
 
-export const getDailyDoc = (uid, date) => {
+export const fetchTaskList = (uid, date) => {
   return getDailyDocsCollection(uid).doc(date).get()
     .then(
       (doc) => {
         if (doc.exists) {
-          log.info('RETRIEVE DAILYDOC FROM FIRESTORE, ID: ', date);
-          return { content: doc.data().content };
+          log.info('RETRIEVE FROM FIRESTORE, DOC ID: ', date);
+          return { taskList: taskListUtil.parseStringTaskList(doc.data().content) };
         } else {
           log.info('NO SUCH DOCUMENT, CREATE DOC: ', date);
           storeTaskList(uid, date, initialTaskList)
