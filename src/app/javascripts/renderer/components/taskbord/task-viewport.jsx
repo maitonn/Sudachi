@@ -9,6 +9,7 @@ import { dialog, remote } from 'electron';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FlatButton from 'material-ui/FlatButton';
 import * as taskListUtil from '../../../utils/task-list';
+import * as database from '../../infrastructure/database';
 import initialTaskList from '../../../../data/initial.json';
 
 // Initialize Cloud Firestore through Firebase
@@ -41,29 +42,26 @@ const TaskViewport = class TaskViewport extends React.Component {
         const taskListOnlyDoneTask = taskListUtil.getTaskListOnlyDoneTask(this.props.taskList)
         const taskListWithoutDoneTask = taskListUtil.getTaskListWithoutDoneTask(this.props.taskList)
         this.props.saveTaskList(this.props.date, taskListOnlyDoneTask)
-
-        db.collection('users').doc(this.props.currentUser.uid).collection('dailyDocs').doc(tomorrow).get().then((doc) => {
-          let tomorrowTaskList;
-          if (doc.exists) {
-            log.info('RETRIEVE DOCUMENT ID: ', doc.id);
-            tomorrowTaskList = Raw.deserialize(JSON.parse(doc.data().content), { terse: true });
-          } else {
-            log.info('NO SUCH DOCUMENT, ID: ', tomorrow);
-            tomorrowTaskList = Raw.deserialize(initialTaskList, { terse: true });
-          }
-          let transform = tomorrowTaskList.transform();
-          taskListWithoutDoneTask.document.nodes.forEach((block, index) => {
-            transform = transform.insertNodeByKey(
-              tomorrowTaskList.document.key,
-              (tomorrowTaskList.document.nodes.size + index),
-              block
-            );
-          });
-          this.props.onUpdateDateAndTask(tomorrow, transform.apply());
-        })
-        .catch((error) => {
-          log.error("ERROR RETRIEVING FROM FIRESTORE", error);
-        });
+        database.fetchTaskList(this.props.currentUser.uid, tomorrow)
+          .then(
+            (res) => {
+              let tomorrowTaskList = res.taskList;
+              let transform = tomorrowTaskList.transform();
+              taskListWithoutDoneTask.document.nodes.forEach((block, index) => {
+                transform = transform.insertNodeByKey(
+                  tomorrowTaskList.document.key,
+                  (tomorrowTaskList.document.nodes.size + index),
+                  block
+                );
+              });
+              this.props.onUpdateDateAndTask(tomorrow, transform.apply());
+            }
+          )
+          .catch(
+            (error) => {
+              this.props.onUpdateDateAndTask(tomorrow, taskListWithoutDoneTask);
+            }
+          )
       }
     })
   }
