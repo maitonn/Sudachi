@@ -68,3 +68,23 @@ export const getDateListWithTaskCountByDate = (dateList, taskList, date) => {
   }
   return dateList
 }
+
+/**
+ * get array dateList with task count.
+ *
+ * @param  {Array} dateList
+ * @param  {Array} dailyTaskLists [{taskList, date}]
+ * @return {Array}
+ */
+
+export const getDateListWithTaskCountByTaskLists = (dateList, taskLists) => {
+  let dateListWithTaskCount = dateList;
+  _.each(taskLists, (dailyTaskList) => {
+    dateListWithTaskCount = getDateListWithTaskCountByDate(
+      dateListWithTaskCount,
+      dailyTaskList.taskList,
+      dailyTaskList.date
+    );
+  })
+  return dateListWithTaskCount
+}

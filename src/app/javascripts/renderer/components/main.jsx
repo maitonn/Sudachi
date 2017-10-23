@@ -144,19 +144,13 @@ class TaskBoard extends React.Component {
   }
 
   updateDateList(dateList, dateFrom, dateTo = dateFrom){
-    const currentUser = firebase.auth().currentUser;
-    database.fetchTaskListByDateRange(currentUser.uid, dateFrom, dateTo)
+    database.fetchTaskListByDateRange(this.state.currentUser.uid, dateFrom, dateTo)
       .then(
         (res) => {
-          let dateListWithTaskCount = dateList;
-          _.each(res.taskLists, (dailyTaskList) => {
-            dateListWithTaskCount = dateListUtil.getDateListWithTaskCountByDate(
-              dateListWithTaskCount,
-              dailyTaskList.taskList,
-              dailyTaskList.date
-            );
-          })
-          this.dispatch({ type: 'UPDATE_DATE_LIST', dateList: dateListWithTaskCount });
+          this.dispatch({
+            type: 'UPDATE_DATE_LIST',
+            dateList: dateListUtil.getDateListWithTaskCountByTaskLists(dateList, res.taskLists)
+          });
         }
       )
   }
@@ -223,6 +217,11 @@ class TaskBoard extends React.Component {
   }
 
   componentDidMount(){
+    // initialize dateList
+    const dateList = this.state.dateList
+    this.updateDateList(dateList, dateList[0].date, dateList[dateList.length - 1].date)
+
+    // set interval
     intervalIds.push(setInterval(() => { this.updateMarker() }, 60000));
     let prevTaskList, nextTaskList;
     intervalIds.push(setInterval(() => {
@@ -247,10 +246,6 @@ class TaskBoard extends React.Component {
       .catch(
         (error) => { this.updateTask(initialTaskList) }
       );
-
-    // initialize dateList
-    const dateList = this.state.dateList
-    this.updateDateList(dateList, dateList[0].date, dateList[dateList.length - 1].date)
   }
 
   componentWillUnmount(){
