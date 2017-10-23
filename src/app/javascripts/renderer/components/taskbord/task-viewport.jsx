@@ -1,7 +1,5 @@
 import React from 'react';
 import { Raw } from 'slate';
-import firebase from 'firebase';
-import 'firebase/firestore';
 import log from 'electron-log';
 import TaskEditor from './task-editor';
 import moment from 'moment';
@@ -11,9 +9,6 @@ import FlatButton from 'material-ui/FlatButton';
 import * as taskListUtil from '../../../utils/task-list';
 import * as database from '../../infrastructure/database';
 import initialTaskList from '../../../../data/initial.json';
-
-// Initialize Cloud Firestore through Firebase
-const db = firebase.firestore();
 
 const TaskViewport = class TaskViewport extends React.Component {
 
