@@ -143,30 +143,22 @@ class TaskBoard extends React.Component {
     });
   }
 
-  updateDateList(dateList, dateFrom, dateTo){
-    dateTo = dateTo || dateFrom;
+  updateDateList(dateList, dateFrom, dateTo = dateFrom){
     const currentUser = firebase.auth().currentUser;
-    db.collection('users').doc(currentUser.uid).collection('dailyDocs')
-      .where("date", ">=", dateFrom)
-      .where("date", "<=", dateTo)
-      .limit(30)
-      .orderBy("date")
-      .get()
-      .then((querySnapshot) => {
-        let dateListWithTaskCount = dateList;
-        querySnapshot.forEach((doc) => {
-          log.info("RETRIEVE FROM FIRESTORE, DOC ID: ", doc.id);
-          dateListWithTaskCount = dateListUtil.getDateListWithTaskCountByDate(
-            dateListWithTaskCount,
-            Raw.deserialize(JSON.parse(doc.data().content), { terse: true }),
-            doc.data().date
-          );
-        });
-        this.dispatch({ type: 'UPDATE_DATE_LIST', dateList: dateListWithTaskCount });
-      })
-      .catch((error) => {
-        log.error("ERROR RETRIEVING FROM FIRESTORE", error);
-      });
+    database.fetchTaskListByDateRange(currentUser.uid, dateFrom, dateTo)
+      .then(
+        (res) => {
+          let dateListWithTaskCount = dateList;
+          _.each(res.taskLists, (dailyTaskList) => {
+            dateListWithTaskCount = dateListUtil.getDateListWithTaskCountByDate(
+              dateListWithTaskCount,
+              dailyTaskList.taskList,
+              dailyTaskList.date
+            );
+          })
+          this.dispatch({ type: 'UPDATE_DATE_LIST', dateList: dateListWithTaskCount });
+        }
+      )
   }
 
   updateDragTargetPositionTop(dragTargetPositionTop){

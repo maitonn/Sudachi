@@ -66,7 +66,7 @@ export const storeTaskList = (uid, date, taskList) => {
  * get dailydoc from firestore.
  * @param  {String} uid
  * @param  {String} date
- * @return {Promise} with state object.
+ * @return {Promise} containing state object.
  */
 
 export const fetchTaskList = (uid, date) => {
@@ -93,4 +93,40 @@ export const fetchTaskList = (uid, date) => {
         throw new Error(error.message);
       }
     )
+}
+
+/**
+ * get dailydoc from firestore by date range
+ * @param  {String} uid
+ * @param  {String} dateFrom YYYYMMDD
+ * @param  {String} dateTo   YYYYMMDD
+ * @return {Promise} containing array of state object
+ */
+
+export const fetchTaskListByDateRange = (uid, dateFrom, dateTo = dateFrom) => {
+  return getDailyDocsCollection(uid)
+    .where('date', '>=', dateFrom)
+    .where('date', '<=', dateTo)
+    .limit(30)
+    .orderBy('date')
+    .get()
+    .then(
+      (querySnapshot) => {
+        let taskLists = [];
+        querySnapshot.forEach((doc) => {
+          log.info('RETRIEVE FROM FIRESTORE, DOC ID: ', doc.id);
+          taskLists.push({
+            date: doc.data().date,
+            taskList: taskListUtil.parseStringTaskList(doc.data().content)
+          })
+        });
+        return { taskLists: taskLists }
+      }
+    )
+    .catch(
+      (error) => {
+        log.error('ERROR RETRIEVING FROM FIRESTORE, FROM ', dateFrom, 'TO ', dateTo);
+        throw new Error(error.message);
+      }
+    );
 }
