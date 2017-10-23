@@ -1,6 +1,7 @@
 import React from 'react';
 import { Raw } from 'slate';
 import firebase from 'firebase';
+import 'firebase/firestore';
 import log from 'electron-log';
 import TaskEditor from './task-editor';
 import moment from 'moment';

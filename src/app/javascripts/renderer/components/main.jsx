@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import firebase from 'firebase';
 import log from 'electron-log';
 import _ from 'lodash';
@@ -11,10 +12,12 @@ import Footer from './footer';
 import TimelineViewport from './taskbord/timeline-viewport';
 import CalendarViewport from './taskbord/calendar-viewport';
 import TaskViewport from './taskbord/task-viewport';
+import loginComponet from './login';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import * as Constants from './constants';
 import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
+import * as auth from '../infrastructure/auth'
 import * as database from '../infrastructure/database';
 injectTapEventPlugin();
 
@@ -97,8 +100,15 @@ class TaskBoard extends React.Component {
     this.setState(prevState => taskBoardReducer(prevState, action))
   }
 
-  updateCurrentUser(currentUser){
+  setCurrentUser(currentUser){
     this.dispatch({ type: 'UPDATE_CURRENT_USER', currentUser: currentUser });
+  }
+
+  removeCrrentUser(){
+    auth.signOut();
+    this.dispatch({ type: 'UPDATE_CURRENT_USER', currentUser: null });
+    const root = document.getElementById('root');
+    ReactDOM.render(React.createElement(loginComponet), root);
   }
 
   updateTask(taskList){
@@ -232,7 +242,7 @@ class TaskBoard extends React.Component {
   componentWillMount(){
     // initialize currentUser
     const currentUser = firebase.auth().currentUser;
-    this.updateCurrentUser(currentUser);
+    this.setCurrentUser(currentUser);
 
     // initialize taskList
     database.fetchTaskList(currentUser.uid, today)
@@ -258,7 +268,7 @@ class TaskBoard extends React.Component {
             <CalendarViewport
               date={this.state.date}
               taskList={this.state.taskList}
-              onUpdateCrrentUser={this.updateCurrentUser.bind(this)}
+              onSignOut={this.removeCrrentUser.bind(this)}
               onUpdateDate={this.updateDate.bind(this)}
               onUpdateDateList={this.updateDateList.bind(this)}
               showHistoryMenu={this.showHistoryMenu.bind(this)}

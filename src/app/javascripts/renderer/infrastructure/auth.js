@@ -15,6 +15,19 @@ export const signInWithEmailAndPassword = (email, password) => {
     );
 }
 
+export const signOut = () => {
+  return auth.signOut()
+    .catch(
+      (error) => {
+        log.error(error.message);
+        throw {
+          type: 'signOut',
+          message: error.message
+        }
+      }
+    );
+}
+
 export const createUser = (email, password, displayName) => {
   return auth.createUserWithEmailAndPassword(email, password)
     .then(
@@ -23,7 +36,7 @@ export const createUser = (email, password, displayName) => {
       },
       (error) => {
         throw {
-          type: "createUserWithEmailAndPassword",
+          type: 'createUserWithEmailAndPassword',
           message: error.message
         }
       }

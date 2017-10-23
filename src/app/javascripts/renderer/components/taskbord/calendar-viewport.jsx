@@ -1,6 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import firebase from 'firebase';
 import log from 'electron-log';
 import moment from 'moment';
 import _ from 'lodash';
@@ -18,7 +16,6 @@ import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import * as Constants from '../constants';
 import * as dateListUtil from '../../../utils/date-list';
-import loginComponet from '../login';
 
 const CalendarViewport = class CalendarViewport extends React.Component {
 
@@ -98,15 +95,6 @@ const CalendarViewport = class CalendarViewport extends React.Component {
 
   renderDropdownButton(){
     let _props = this.props;
-    const onMouseDown = () => {
-      firebase.auth().signOut().then(function() {
-        _props.onUpdateCrrentUser(null);
-        const root = document.getElementById('root');
-        ReactDOM.render(React.createElement(loginComponet), root);
-      }).catch(function(error) {
-        log.error(error);
-      })
-    }
     return (
       <div>
         <IconMenu
@@ -124,7 +112,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
           menuStyle={{ backgroundColor: '#fff' }}
         >
           <MenuItem
-            onMouseDown={onMouseDown}
+            onMouseDown={this.props.onSignOut}
             primaryText="Sing out"
             style={{
               backgroundColor: '#fff',
