@@ -1,6 +1,5 @@
 import React from 'react';
 import firebase from 'firebase';
-import 'firebase/firestore';
 import log from 'electron-log';
 import _ from 'lodash';
 import moment from 'moment';
@@ -18,9 +17,6 @@ import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
 import * as database from '../infrastructure/database';
 injectTapEventPlugin();
-
-// Initialize Cloud Firestore through Firebase
-const db = firebase.firestore();
 
 let intervalIds = [];
 const serializedInitialData = require("../../../data/initial.json");
