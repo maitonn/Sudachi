@@ -1,10 +1,10 @@
 import log from 'electron-log';
-import firebase from 'firebase';
+import firebaseApp from './firebase-app';
 import 'firebase/firestore';
 import { Raw } from 'slate';
 import * as taskListUtil from '../../utils/task-list'
 
-const db = firebase.firestore();
+const db = firebaseApp.firestore();
 const usersCollection = db.collection('users');
 const serializedInitialData = require("../../../data/initial.json");
 const initialTaskList = Raw.deserialize(serializedInitialData, { terse: true });

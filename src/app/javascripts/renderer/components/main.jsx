@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import firebase from 'firebase';
 import log from 'electron-log';
 import _ from 'lodash';
 import moment from 'moment';
@@ -241,7 +240,7 @@ class TaskBoard extends React.Component {
 
   componentWillMount(){
     // initialize currentUser
-    const currentUser = firebase.auth().currentUser;
+    const currentUser = auth.getCurrentUser();
     this.setCurrentUser(currentUser);
 
     // initialize taskList

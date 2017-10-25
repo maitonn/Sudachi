@@ -1,7 +1,7 @@
 import log from 'electron-log';
-import firebase from 'firebase';
+import firebaseApp from './firebase-app';
 import * as database from './database';
-const auth = firebase.auth();
+const auth = firebaseApp.auth();
 
 export const signInWithEmailAndPassword = (email, password) => {
   return auth.signInWithEmailAndPassword(email, password)
@@ -48,4 +48,8 @@ export const activateUser = (user, displayName) => {
     .then(
       () => { return database.createUserDoc(user.uid, displayName) }
     );
+}
+
+export const getCurrentUser = () => {
+  return firebaseApp.auth().currentUser;
 }

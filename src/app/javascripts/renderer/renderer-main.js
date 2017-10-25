@@ -1,14 +1,5 @@
-// Initialize Firebase
-var config = {
-  apiKey: "AIzaSyB_slMURwrAuf0JvCQCCwZw8SqMdVdHEfA",
-  authDomain: "sudachi-47f40.firebaseapp.com",
-  databaseURL: "https://sudachi-47f40.firebaseio.com",
-  projectId: "sudachi-47f40",
-  storageBucket: "sudachi-47f40.appspot.com",
-  messagingSenderId: "112036945599"
-};
-const firebase = require("firebase");
-firebase.initializeApp(config);
+
+const firebaseApp = require("./infrastructure/firebase-app");
 
 const loadRootContent = (content) => {
   require('babel-register')(
@@ -22,7 +13,7 @@ const loadRootContent = (content) => {
 }
 
 (() => {
-  firebase.auth().onAuthStateChanged(function(user) {
+  firebaseApp.auth().onAuthStateChanged(function(user) {
     if (user) {
       // User is signed in.
       loadRootContent('main');
