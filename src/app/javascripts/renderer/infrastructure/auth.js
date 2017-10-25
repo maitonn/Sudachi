@@ -3,6 +3,12 @@ import firebaseApp from './firebase-app';
 import * as database from './database';
 const auth = firebaseApp.auth();
 
+/**
+ * sign in with email and password.
+ * @param  {String} email
+ * @param  {String} password
+ * @return {Promise}
+ */
 export const signInWithEmailAndPassword = (email, password) => {
   return auth.signInWithEmailAndPassword(email, password)
     .catch(
@@ -15,6 +21,10 @@ export const signInWithEmailAndPassword = (email, password) => {
     );
 }
 
+/**
+ * sign out.
+ * @return {Promise}
+ */
 export const signOut = () => {
   return auth.signOut()
     .catch(
@@ -28,6 +38,14 @@ export const signOut = () => {
     );
 }
 
+/**
+ * create and activate user with email and password.
+ * cf. firebase user object: https://firebase.google.com/docs/reference/js/firebase.User
+ * @param  {String} email
+ * @param  {String} password
+ * @param  {String} displayName
+ * @return {Promise} containing user object and displayName if success to create user.
+ */
 export const createUser = (email, password, displayName) => {
   return auth.createUserWithEmailAndPassword(email, password)
     .then(
@@ -43,6 +61,12 @@ export const createUser = (email, password, displayName) => {
     );
 }
 
+/**
+ * activate user. create user document in firestore
+ * @param  {User} user        firebase user object
+ * @param  {String} displayName
+ * @return {Promise}
+ */
 export const activateUser = (user, displayName) => {
   return user.updateProfile({ displayName: displayName })
     .then(
@@ -50,6 +74,10 @@ export const activateUser = (user, displayName) => {
     );
 }
 
+/**
+ * get current user.
+ * @return {User} firebase user object
+ */
 export const getCurrentUser = () => {
   return firebaseApp.auth().currentUser;
 }
