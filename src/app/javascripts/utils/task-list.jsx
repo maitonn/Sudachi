@@ -1,6 +1,8 @@
 import { Raw } from 'slate';
 import { ipcRenderer } from 'electron';
 import * as Constants from '../renderer/components/constants';
+import * as database from '../renderer/infrastructure/database'
+import * as storage from '../modules/storage'
 const initialData = require("../../data/initial.json")
 const log = require('electron-log');
 
@@ -149,4 +151,33 @@ export const getTaskListOnlyDoneTask = (taskList) => {
   } else {
     return Raw.deserialize(initialData, { terse: true })
   }
+}
+
+/**
+ * get initial taskList.
+ * if today's prev taskList exists, return the value,
+ * else save prev taskList to firestore and retrieve today's taskList.
+ *
+ * @param  {String} uid
+ * @param  {String} date YYYYMMDD
+ * @return {Promise}      if resolve, containing taskList.
+ */
+export const getInitialTaskList = (uid, date) => {
+  return storage.getPrevTaskList()
+    .then(
+      (res) => {
+        log.info('PREV FILE EXSIST.');
+        let prevTaskListDate = res.taskList.document.data.get('date')
+        if (prevTaskListDate == date) {
+          log.info('TODAY\'S PREV FILE EXIST, DATE: ', date)
+          return { taskList: res.taskList }
+        } else {
+          log.info('SAVE PREV FILE TO FIRESTORE, DATE: ', prevTaskListDate)
+          // store prev taskList
+          database.storeTaskList(uid, prevTaskListDate, res.taskList)
+          // retrieve today's taskList
+          return database.fetchTaskList(uid, date)
+        }
+      }
+    )
 }

@@ -18,6 +18,7 @@ import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
 import * as auth from '../infrastructure/auth'
 import * as database from '../infrastructure/database';
+import * as storage from '../../modules/storage';
 injectTapEventPlugin();
 
 let intervalIds = [];
@@ -236,6 +237,12 @@ class TaskBoard extends React.Component {
         prevTaskList = nextTaskList;
       }
     }, 10000));
+
+    // set onUnload event handler
+    window.addEventListener('beforeunload', (e) => {
+      e.preventDefault()
+      storage.storePrevTaskList(this.state.date, this.state.taskList);
+    })
   }
 
   componentWillMount(){
@@ -244,16 +251,21 @@ class TaskBoard extends React.Component {
     this.setCurrentUser(currentUser);
 
     // initialize taskList
-    database.fetchTaskList(currentUser.uid, today)
+    taskListUtil.getInitialTaskList(currentUser.uid, today)
       .then(
-        (res) => { this.updateTask(res.taskList) }
+        (res) => {
+          this.updateTask(res.taskList)
+          // remove stored prev taskList file.
+          storage.removePrevTaskList()
+        }
       )
       .catch(
         (error) => { this.updateTask(initialTaskList) }
-      );
+      )
   }
 
   componentWillUnmount(){
+    alert('component will unmount!');
     _.each(intervalIds, (id) => {
       clearInterval(id);
     });
