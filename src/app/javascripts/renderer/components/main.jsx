@@ -265,7 +265,6 @@ class TaskBoard extends React.Component {
   }
 
   componentWillUnmount(){
-    alert('component will unmount!');
     _.each(intervalIds, (id) => {
       clearInterval(id);
     });
