@@ -7,7 +7,7 @@ const initialData = require("../../data/initial.json")
 const log = require('electron-log');
 
 /**
- * stringfy tasklist.
+ * stringify tasklist.
  * @param  {State} taskList
  * @return {String}
  */
