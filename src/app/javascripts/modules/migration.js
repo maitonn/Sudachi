@@ -7,7 +7,6 @@ const log = require('electron-log');
 const storage = require('electron-storage');
 const migrateTo = 30;
 const getTaskListPath = (date) => { return 'taskList/' + date + '.json' }
-const completeFile = 'migrateTaskList/migrate.json'
 
 /**
  * get migrate target date list.
@@ -84,13 +83,14 @@ const loadAndMigrate = (uid) => {
  * @return {Promise}
  */
 export const migrate = (uid) => {
-  return storage.isPathExists(completeFile)
+  return database.fetchUserInfo(uid)
     .then(
-      (itDoes) => {
-        if(itDoes) {
+      (res) => {
+        if(res.user.isMigrated) {
           log.info('migration is already completed.')
         } else {
           loadAndMigrate(uid)
+          database.updateUserMigrated(uid)
         }
       }
     )
@@ -98,20 +98,5 @@ export const migrate = (uid) => {
       (error) => {
         log.error(error.message)
       }
-    )
-}
-
-/**
- * create migration complete file.
- *
- * @return {Promise}
- */
-export const createCompleteFile = () => {
-  return storage.set(completeFile, { isMigrated: true })
-    .then(
-      () => { log.info('migration finished!') }
-    )
-    .catch(
-      (error) => { log.error(error.message) }
     )
 }

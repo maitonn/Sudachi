@@ -244,9 +244,6 @@ class TaskBoard extends React.Component {
       e.preventDefault()
       storage.storePrevTaskList(this.state.date, this.state.taskList);
     })
-
-    // create migration complete file if not exists
-    migration.createCompleteFile()
   }
 
   componentWillMount(){

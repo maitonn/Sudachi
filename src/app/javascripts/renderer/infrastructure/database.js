@@ -25,6 +25,37 @@ export const createUserDoc = (uid, displayName) => {
     );
 }
 
+export const fetchUserInfo = (uid) => {
+  return usersCollection.doc(uid).get()
+    .then(
+      (doc) => {
+        log.info('FETCH USER INFO, DISPLAY NAME: ', doc.data().displayName)
+        return { user: doc.data() }
+      }
+    )
+    .catch(
+      (error) => {
+        throw new Error(error.message)
+      }
+    )
+}
+
+/**
+ * update migrated status true.
+ *
+ * @param  {String} uid
+ * @return {Promise}
+ */
+
+export const updateUserMigrated = (uid) => {
+  return usersCollection.doc(uid).set({ isMigrated: true }, { merge: true })
+    .catch(
+      (error) => {
+        throw new Error(error.message)
+      }
+    )
+}
+
 /**
  * get dailydoc collection by uid.
  * @param  {String} uid
