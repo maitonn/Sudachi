@@ -180,4 +180,11 @@ export const getInitialTaskList = (uid, date) => {
         }
       }
     )
+    .catch(
+      (error) => {
+        if (error.type == 'PathNotExistsError') {
+          return database.fetchTaskList(uid, date)
+        }
+      }
+    )
 }

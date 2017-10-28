@@ -15,7 +15,10 @@ const isPathExists = (path) => {
     .then(
       (itDoes) => {
         if (! itDoes) {
-          throw new Error('prev file not found.')
+          throw {
+            type: 'PathNotExistsError',
+            message: 'path not exists, path: ' + path
+          }
         }
       }
     )
@@ -27,7 +30,7 @@ const isPathExists = (path) => {
  * @param  {String} path file path
  * @return {Promise}      if resolve containing taskList
  */
-const getTaskList = (path) => {
+export const getTaskList = (path) => {
   return storage.get(path)
     .then(
       (data) => {
@@ -79,7 +82,7 @@ export const storePrevTaskList = (date, taskList) => {
 
 /**
  * get prev taskList from local storage.
- * 
+ *
  * @return {Promise}
  */
 export const getPrevTaskList = () => {
@@ -90,7 +93,7 @@ export const getPrevTaskList = () => {
     .catch(
       (error) => {
         log.error(error.message)
-        throw new Error(error.message)
+        throw error
       }
     )
 }
@@ -108,7 +111,7 @@ export const removePrevTaskList = () => {
     .catch(
       (error) => {
         log.error(error.message)
-        throw new Error(error.message)
+        throw error
       }
     )
 }

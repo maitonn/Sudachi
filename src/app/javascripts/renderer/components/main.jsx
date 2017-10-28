@@ -19,6 +19,7 @@ import * as taskListUtil from '../../utils/task-list';
 import * as auth from '../infrastructure/auth'
 import * as database from '../infrastructure/database';
 import * as storage from '../../modules/storage';
+import * as migration from '../../modules/migration';
 injectTapEventPlugin();
 
 let intervalIds = [];
@@ -243,6 +244,9 @@ class TaskBoard extends React.Component {
       e.preventDefault()
       storage.storePrevTaskList(this.state.date, this.state.taskList);
     })
+
+    // create migration complete file if not exists
+    migration.createCompleteFile()
   }
 
   componentWillMount(){
@@ -250,17 +254,21 @@ class TaskBoard extends React.Component {
     const currentUser = auth.getCurrentUser();
     this.setCurrentUser(currentUser);
 
-    // initialize taskList
-    taskListUtil.getInitialTaskList(currentUser.uid, today)
+    // migration local taskList file.
+    migration.migrate(currentUser.uid)
       .then(
-        (res) => {
-          this.updateTask(res.taskList)
-          // remove stored prev taskList file.
-          storage.removePrevTaskList()
-        }
-      )
-      .catch(
-        (error) => { this.updateTask(initialTaskList) }
+        // initialize taskList
+        taskListUtil.getInitialTaskList(currentUser.uid, today)
+          .then(
+            (res) => {
+              this.updateTask(res.taskList)
+              // remove stored prev taskList file.
+              storage.removePrevTaskList()
+            }
+          )
+          .catch(
+            (error) => { this.updateTask(initialTaskList) }
+          )
       )
   }
 
