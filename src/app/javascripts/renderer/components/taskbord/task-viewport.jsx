@@ -1,13 +1,14 @@
 import React from 'react';
 import { Raw } from 'slate';
+import log from 'electron-log';
 import TaskEditor from './task-editor';
 import moment from 'moment';
 import { dialog, remote } from 'electron';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FlatButton from 'material-ui/FlatButton';
-import taskListStorage from '../../../modules/task-list-storage';
-import * as taskListUtil from '../../../utils/task-list'
-const storage = new taskListStorage()
+import * as taskListUtil from '../../../utils/task-list';
+import * as database from '../../infrastructure/database';
+import initialTaskList from '../../../../data/initial.json';
 
 const TaskViewport = class TaskViewport extends React.Component {
 
@@ -33,19 +34,29 @@ const TaskViewport = class TaskViewport extends React.Component {
     }, (buttonIndex) => {
       if (buttonIndex === 0) {
         const tomorrow = moment(this.props.date).add(1, 'd').format("YYYYMMDD")
-        const tomorrowTaskList = taskListUtil.getTaskListByDate(tomorrow)
         const taskListOnlyDoneTask = taskListUtil.getTaskListOnlyDoneTask(this.props.taskList)
         const taskListWithoutDoneTask = taskListUtil.getTaskListWithoutDoneTask(this.props.taskList)
-        storage.set(this.props.date, Raw.serialize(taskListOnlyDoneTask).document)
-        let transform = tomorrowTaskList.transform()
-        taskListWithoutDoneTask.document.nodes.forEach((block, index) => {
-          transform = transform.insertNodeByKey(
-            tomorrowTaskList.document.key,
-            (tomorrowTaskList.document.nodes.size + index),
-            block
+        this.props.saveTaskList(this.props.date, taskListOnlyDoneTask)
+        database.fetchTaskList(this.props.currentUser.uid, tomorrow)
+          .then(
+            (res) => {
+              let tomorrowTaskList = res.taskList;
+              let transform = tomorrowTaskList.transform();
+              taskListWithoutDoneTask.document.nodes.forEach((block, index) => {
+                transform = transform.insertNodeByKey(
+                  tomorrowTaskList.document.key,
+                  (tomorrowTaskList.document.nodes.size + index),
+                  block
+                );
+              });
+              this.props.onUpdateDateAndTask(tomorrow, transform.apply());
+            }
           )
-        })
-        this.props.onUpdateDateAndTask(tomorrow, transform.apply())
+          .catch(
+            (error) => {
+              this.props.onUpdateDateAndTask(tomorrow, taskListWithoutDoneTask);
+            }
+          )
       }
     })
   }

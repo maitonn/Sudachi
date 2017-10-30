@@ -29,6 +29,8 @@ export const initialDateList = () => {
   return dateList
 }
 
+export const createDateCountByMoreButton = 5;
+
 export const minIndent = 1
 export const maxIndent = 5
 

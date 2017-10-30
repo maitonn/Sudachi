@@ -1,18 +1,21 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import log from 'electron-log';
 import moment from 'moment';
 import _ from 'lodash';
 import { Raw } from 'slate';
 import { ipcRenderer } from 'electron';
 import Divider from 'material-ui/Divider';
-import Drawer from 'material-ui/Drawer'
-import MenuItem from 'material-ui/MenuItem'
-import RaiseButton from 'material-ui/RaisedButton'
+import Drawer from 'material-ui/Drawer';
+import MenuItem from 'material-ui/MenuItem';
+import IconMenu from 'material-ui/IconMenu';
+import IconButton from 'material-ui/IconButton';
+import RaiseButton from 'material-ui/RaisedButton';
 import FlatButton from 'material-ui/FlatButton';
 import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import * as dateListUtil from '../../../utils/date-list.jsx'
+import * as Constants from '../constants';
+import * as dateListUtil from '../../../utils/date-list';
 
 const CalendarViewport = class CalendarViewport extends React.Component {
 
@@ -23,25 +26,20 @@ const CalendarViewport = class CalendarViewport extends React.Component {
   }
 
   clickMoreDown(e){
-    let dateList = this.props.dateList
-    let startDate = dateList[dateList.length - 1].date
-    let date
-    _.map(_.range(1, 5), (d, i) => {
-      date = moment(startDate).add(+d, 'd').format("YYYYMMDD")
-      dateList.push(dateListUtil.getDateWithTaskCount(date))
-    })
-    this.props.onUpdateDateList(dateList)
+    let dateList = this.props.dateList;
+    let dateFrom = moment(dateList[dateList.length - 1].date).add(1, 'd').format('YYYYMMDD');
+    const dateRange = dateListUtil.getDateRange(dateFrom, Constants.createDateCountByMoreButton - 1)
+    _.each(dateRange, (date) => { dateList.push(dateListUtil.createDate(date)) });
+    this.props.onUpdateDateList(dateList, dateFrom, dateRange[dateRange.length - 1]);
   }
 
   clickMoreUp(e){
     let dateList = this.props.dateList
-    let startDate = dateList[0].date
-    let date
-    _.map(_.range(1, 5), (d, i) => {
-      date = moment(startDate).add(-d, 'd').format("YYYYMMDD")
-      dateList.unshift(dateListUtil.getDateWithTaskCount(date))
-    })
-    this.props.onUpdateDateList(dateList)
+    let dateTo = moment(dateList[0].date).add(-1, 'd').format('YYYYMMDD');
+    const countDown = true;
+    let dateRange = dateListUtil.getDateRange(dateTo, Constants.createDateCountByMoreButton - 1, countDown)
+    _.each(dateRange, (date) => { dateList.unshift(dateListUtil.createDate(date)) });
+    this.props.onUpdateDateList(dateList, dateRange[dateRange.length - 1], dateTo);
   }
 
   renderMenuItem() {
@@ -54,6 +52,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
         <MenuItem
           key={i}
           innerDivStyle={innerDivStyle}
+          style={{fontSize: '14px'}}
           onTouchTap={this.updateDate.bind(this)}>
           {date.dateFull}
           <div style={{display: "none"}}>{date.date}</div>
@@ -94,6 +93,39 @@ const CalendarViewport = class CalendarViewport extends React.Component {
     return items
   }
 
+  renderDropdownButton(){
+    let _props = this.props;
+    return (
+      <div>
+        <IconMenu
+          iconButtonElement={
+            <IconButton
+              iconClassName="material-icons"
+              style={{
+                marginTop: '-10px'
+              }}>
+              arrow_drop_down
+            </IconButton>
+          }
+          anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+          targetOrigin={{horizontal: 'left', vertical: 'top'}}
+          menuStyle={{ backgroundColor: '#fff' }}
+        >
+          <MenuItem
+            onMouseDown={this.props.onSignOut}
+            primaryText="Sing out"
+            style={{
+              backgroundColor: '#fff',
+              color: '#464646',
+              minHeight: '35px',
+              lineHeight: '35px'
+            }}
+          />
+        </IconMenu>
+      </div>
+    );
+  }
+
   render() {
     return (
       <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
@@ -105,14 +137,15 @@ const CalendarViewport = class CalendarViewport extends React.Component {
           />
           <Drawer
             open={this.props.showHistory}
-            containerStyle={{overflow: "hidden"}}>
-            <div style={{textAlign: "right"}}>
-              <FlatButton
-                label="close ✕"
-                onTouchTap={this.props.hideHistoryMenu.bind(this)}
-              />
+            containerStyle={{overflow: "hidden", width: '208px'}}>
+            <div className="account">
+              <div className="account-main">
+                <div className="user-display-name">{this.props.currentUser ? this.props.currentUser.displayName : ''}</div>
+                {this.renderDropdownButton()}
+              </div>
+              <span className="user-email">{this.props.currentUser ? this.props.currentUser.email : ''}</span>
             </div>
-            <div style={{overflow: "scroll", height: "calc(100% - 36px)"}}>
+            <div style={{overflow: "scroll", height: "calc(100% - 110px)"}}>
               {this.renderMenuItem()}
             </div>
           </Drawer>

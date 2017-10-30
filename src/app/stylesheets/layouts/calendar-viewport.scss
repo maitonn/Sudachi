@@ -1,4 +1,20 @@
 #calendar-viewport {
+  div.account {
+    padding: 15px;
+    background-color: #3A3A3A;
+    .account-main {display: flex;}
+    .user-display-name {
+      margin: 10px auto;
+      flex: 1 0 100px;
+      text-overflow: ellipsis;
+      font-size: 15px;
+    }
+    .user-email {
+      font-size: 12px;
+      display: block;
+      color: #9B9B9B;
+    }
+  }
   //background-color: $indigo-darker;
   div.dayname:first-child {
     margin-top: 100px;

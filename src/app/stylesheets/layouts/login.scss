@@ -1,0 +1,68 @@
+#login {
+  width: 440px;
+  margin: auto;
+  vertical-align: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 80%;
+  span {
+    display: block;
+    text-align: center;
+    margin: 20px 0 35px;
+    color: gray;
+    font-size: 22px;
+  }
+  .sudachi-logo {
+    display: block;
+    width: 28%;
+    margin: auto;
+  }
+  #sign-in-by-email, #sign-up-by-email {
+    width: 88%;
+    margin: auto;
+  }
+  .form-group {
+    display: block;
+    margin: 15px auto;
+    input {
+      height: 38px;
+      font-size: 16px;
+      color: #353535;
+      width: 100%;
+    }
+  }
+  .form-inline {
+    .form-group {
+      display: inline-block;
+      width: calc((100% - 10px)/2);
+      margin: auto;
+    }
+    .form-group:first-child {
+      margin-right: 10px;
+    }
+  }
+  .button-group {
+    margin: 25px auto;
+    display: block;
+    text-align: center;
+    button {
+      width: 49%;
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+  .separator {
+    text-align: center;
+    margin: 25px;
+    font-size: 14px;
+  }
+  .btn-google {
+    width: 60%;
+    margin: auto;
+    cursor: pointer;
+    text-align: center;
+  }
+}

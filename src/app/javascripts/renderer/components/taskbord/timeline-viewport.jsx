@@ -58,7 +58,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
   }
 
   /**
-   * get with resized tasklist.
+   * get width resized tasklist.
    *
    * @param {State} targetTaskList
    * @return {State}
