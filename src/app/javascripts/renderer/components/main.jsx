@@ -201,8 +201,6 @@ class TaskBoard extends React.Component {
     let prevShowInTimelineTaskCount = taskListUtil.getShowInTimelineTaskCount(this.state.taskList)
     if (showInTimelineTaskCount == 0) {
       return Constants.initialPositionTop
-    } else if (showInTimelineTaskCount == prevShowInTimelineTaskCount && date == this.state.date) {
-      return this.state.nextTaskPositionTop
     } else {
       taskList.document.nodes.map((block) => {
         if (block.type == "separator") breaker = true
