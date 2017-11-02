@@ -158,12 +158,12 @@ export const getTaskListOnlyDoneTask = (taskList) => {
  * if today's prev taskList exists, return the value,
  * else save prev taskList to firestore and retrieve today's taskList.
  *
- * @param  {String} uid
+ * @param  {User} currentUser
  * @param  {String} date YYYYMMDD
  * @return {Promise}      if resolve, containing taskList.
  */
-export const getInitialTaskList = (uid, date) => {
-  return storage.getPrevTaskList()
+export const getInitialTaskList = (currentUser, date) => {
+  return storage.getPrevTaskList(currentUser.displayName)
     .then(
       (res) => {
         log.info('PREV FILE EXSIST.');
@@ -174,7 +174,7 @@ export const getInitialTaskList = (uid, date) => {
         } else {
           log.info('SAVE PREV FILE TO FIRESTORE, DATE: ', prevTaskListDate)
           // store prev taskList
-          database.storeTaskList(uid, prevTaskListDate, res.taskList)
+          database.storeTaskList(currentUser.uid, prevTaskListDate, res.taskList)
           // retrieve today's taskList
           return database.fetchTaskList(uid, date)
         }

@@ -240,7 +240,7 @@ class TaskBoard extends React.Component {
     // set onUnload event handler
     window.addEventListener('beforeunload', (e) => {
       e.preventDefault()
-      storage.storePrevTaskList(this.state.date, this.state.taskList);
+      storage.storePrevTaskList(this.state.currentUser.displayName, this.state.date, this.state.taskList);
     })
   }
 
@@ -253,12 +253,20 @@ class TaskBoard extends React.Component {
     migration.migrate(currentUser.uid)
       .then(
         // initialize taskList
-        taskListUtil.getInitialTaskList(currentUser.uid, today)
+        taskListUtil.getInitialTaskList(currentUser, today)
           .then(
             (res) => {
               this.updateTask(res.taskList)
               // remove stored prev taskList file.
-              storage.removePrevTaskList()
+              storage.removePrevTaskListByDisplayName(currentUser.displayName)
+                .catch(
+                  (error) => {
+                    // TODO Necessary for v0.2.1. It will be unuse from v0.2.2.
+                    if(error.type == 'PathNotExistsError') {
+                      storage.removePrevTaskList()
+                    }
+                  }
+                )
             }
           )
           .catch(
