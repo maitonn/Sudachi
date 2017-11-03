@@ -252,6 +252,14 @@ const TaskEditor = class TaskEditor extends React.Component {
 
     if (type == 'list-item') transform.wrapBlock('bulleted-list')
 
+    state.document.getClosest(startBlock.key, (parent) => {
+      if(parent.type == 'bulleted-list' && type !== 'list-item') {
+        transform = transform.unwrapBlock('bulleted-list')
+      } else if (parent.type == 'numbered-list' && type !== 'list-item') {
+        transform = transform.unwrapBlock('numbered-list')
+      }
+    })
+
     if (type == 'separator') {
       state =  transform
         .splitBlock()
