@@ -37,6 +37,16 @@ export const isDoneTask = (block) => {
 }
 
 /**
+ * whether is separator block or not
+ * @param  {Block}  block
+ * @return {Boolean}       
+ */
+
+export const isSeparator = (block) => {
+  return block.type == 'separator'
+}
+
+/**
  * whether is not done task block or not.
  * @param  {Block}  block
  * @return {Boolean}
@@ -120,7 +130,7 @@ export const getShowInTimelineTaskCount = (taskList) => {
 export const getTaskListWithoutDoneTask = (taskList) => {
   let transform = taskList.transform()
   taskList.document.nodes.map((block) => {
-    if (isDoneTask(block)) {
+    if (isDoneTask(block) || isSeparator(block)) {
       transform = transform.removeNodeByKey(block.key)
     }
   })
@@ -151,6 +161,22 @@ export const getTaskListOnlyDoneTask = (taskList) => {
   } else {
     return Raw.deserialize(initialData, { terse: true })
   }
+}
+
+/**
+ * get taskList removed blank line.
+ * @param  {State} taskList
+ * @return {State}
+ */
+
+export const getTaskListRemovedBlankLine = (taskList) => {
+  let transform = taskList.transform()
+  taskList.document.nodes.forEach((block) => {
+    if (block.type == paragraph && block.text == '') {
+      transform = transform.removeNodeByKey(block.key)
+    }
+  })
+  return transform.apply()
 }
 
 /**

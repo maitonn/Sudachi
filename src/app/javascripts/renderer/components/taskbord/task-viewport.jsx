@@ -49,7 +49,10 @@ const TaskViewport = class TaskViewport extends React.Component {
                   block
                 );
               });
-              this.props.onUpdateDateAndTask(tomorrow, transform.apply());
+              this.props.onUpdateDateAndTask(
+                tomorrow,
+                taskListUtil.getTaskListRemovedBlankLine(transform.apply())
+              );
             }
           )
           .catch(
