@@ -37,6 +37,7 @@ const TaskViewport = class TaskViewport extends React.Component {
         const taskListOnlyDoneTask = taskListUtil.getTaskListOnlyDoneTask(this.props.taskList)
         const taskListWithoutDoneTask = taskListUtil.getTaskListWithoutDoneTask(this.props.taskList)
         this.props.saveTaskList(this.props.date, taskListOnlyDoneTask)
+        this.props.onUpdateTask(taskListOnlyDoneTask)
         database.fetchTaskList(this.props.currentUser.uid, tomorrow)
           .then(
             (res) => {
