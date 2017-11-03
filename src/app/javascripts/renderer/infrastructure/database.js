@@ -109,7 +109,7 @@ export const fetchTaskList = (uid, date) => {
           return { taskList: taskListUtil.parseStringTaskList(doc.data().content) };
         } else {
           log.info('NO SUCH DOCUMENT, CREATE DOC: ', date);
-          storeTaskList(uid, date, initialTaskList)
+          return storeTaskList(uid, date, initialTaskList)
             .then(
               (res) => {
                 return { taskList: res.taskList };
