@@ -212,8 +212,6 @@ export const updateCurrentFlag = (taskList) => {
 
 /**
  * get initial taskList.
- * if today's prev taskList exists, return the value,
- * else save prev taskList to firestore and retrieve today's taskList.
  *
  * @param  {User} currentUser
  * @param  {String} date YYYYMMDD
@@ -224,17 +222,7 @@ export const getInitialTaskList = (currentUser, date) => {
     .then(
       (res) => {
         log.info('PREV FILE EXSIST.');
-        let prevTaskListDate = res.taskList.document.data.get('date')
-        if (prevTaskListDate == date) {
-          log.info('TODAY\'S PREV FILE EXIST, DATE: ', date)
-          return { taskList: res.taskList }
-        } else {
-          log.info('SAVE PREV FILE TO FIRESTORE, DATE: ', prevTaskListDate)
-          // store prev taskList
-          database.storeTaskList(currentUser.uid, prevTaskListDate, res.taskList)
-          // retrieve today's taskList
-          return database.fetchTaskList(uid, date)
-        }
+        return mergePrevTaskList(currentUser, res.taskList, date)
       }
     )
     .catch(
@@ -244,4 +232,33 @@ export const getInitialTaskList = (currentUser, date) => {
         }
       }
     )
+}
+
+/**
+ * get taskList from date and prevTaskList which created from prev.json
+ * if date of prev taskList equals argument date, return prev taskList,
+ * else save prev taskList to firestore and retrieve taskList of argument date.
+ *
+ * @param  {User}  currentUser
+ * @param  {Slate} prevTaskList
+ * @param  {String} date         YYYYMMDD
+ * @return {Promise}              containing taskList
+ */
+
+export const mergePrevTaskList = (currentUser, prevTaskList, date) => {
+  let prevTaskListDate = prevTaskList.document.data.get('date')
+  if (prevTaskListDate == date) {
+    log.info('TODAY\'S PREV FILE EXIST, DATE: ', date)
+    return { taskList: prevTaskList }
+  } else {
+    log.info('SAVE PREV FILE TO FIRESTORE, DATE: ', prevTaskListDate)
+    // store prev taskList
+    return database.storeTaskList(currentUser.uid, prevTaskListDate, prevTaskList)
+      .then(
+        () => {
+          // retrieve today's taskList.
+          return database.fetchTaskList(currentUser.uid, date)
+        }
+      )
+  }
 }
