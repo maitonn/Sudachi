@@ -148,6 +148,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
           key={i}
           taskKey={block.key}
           block={block}
+          focusKey={this.props.taskList.focusKey}
           nowMarkerTop={this.props.markerPositionTop}
           dragTargetPositionTop={this.props.dragTargetPositionTop}
           showDragTargetTime={this.showDragTargetTime.bind(this)}
