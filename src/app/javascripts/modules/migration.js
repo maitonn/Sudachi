@@ -15,7 +15,7 @@ const getTaskListPath = (date) => { return 'taskList/' + date + '.json' }
  */
 const getMigrateDateList = () => {
   let migrateDateList = []
-  _.each(_.range(0, migrateTo), (d, i) => {
+  _.each(_.range(-2, migrateTo), (d, i) => {
     migrateDateList.push(moment().add(-d, 'd').format("YYYYMMDD"))
   })
   return migrateDateList
