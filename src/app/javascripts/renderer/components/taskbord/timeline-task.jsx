@@ -2,7 +2,9 @@ import React, { PropTypes } from 'react';
 import { DragSource, DropTarget } from "react-dnd";
 import * as Constants from '../constants';
 import * as timelineUtil from '../../../utils/timeline';
+import * as taskEditorUtil from '../../../utils/task-editor';
 import Resizer from './timeline-resizer';
+import classNames from 'classnames'
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 const taskSource = {
@@ -95,6 +97,12 @@ const timelineTask = class TimelineTask extends React.Component {
     return taskStyle
   }
 
+  setTaskTextClass(block, focusKey) {
+    return classNames({
+      'current-line': taskEditorUtil.isFocusedTask(block.key, focusKey)
+    })
+  }
+
   componentDidMount(){
     this.props.connectDragPreview(getEmptyImage(), {
       captureDraggingState: false,
@@ -108,7 +116,7 @@ const timelineTask = class TimelineTask extends React.Component {
       <div
         className={this.setTaskClass(this.props.block.data)}
         style={this.setTaskStyle(this.props.block.data, isDragging)}>
-        <span>{this.props.block.text}</span>
+        <span className={this.setTaskTextClass(this.props.block, this.props.focusKey)}>{this.props.block.text}</span>
         <Resizer
           taskKey={this.props.taskKey}
           block={this.props.block}

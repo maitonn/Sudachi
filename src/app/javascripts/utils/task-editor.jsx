@@ -19,14 +19,17 @@ export const getIndent = (prevIndent, isShift) => {
   * check whether current task or not.
   *
   * @param  {Block}  node
+  * @param  {Number}  nextPositionTop option
+  * @param  {Number}  nextRequiredTime option
   * @return {Boolean}
   */
 
-export const isCurrentTask = (node) => {
-  const top = node.data.get("positionTop")
-  const buttom = top + (Constants.heightPerHour * node.data.get("requiredTime") / 60)
+export const isCurrentTask = (node, nextPositionTop, nextRequiredTime) => {
+  const top = nextPositionTop || node.data.get("positionTop")
+  const requiredTime = nextRequiredTime || node.data.get("requiredTime")
+  const buttom = top + (Constants.heightPerHour * requiredTime / 60)
   const markerPositionTop = Constants.markerPositionTop()
-  return markerPositionTop >= top && markerPositionTop <= buttom
+  return markerPositionTop >= top && markerPositionTop < buttom
 }
 
  /**

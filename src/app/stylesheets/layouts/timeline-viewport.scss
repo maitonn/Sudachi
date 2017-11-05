@@ -67,6 +67,9 @@
           padding: 5px 0 0 5px;
           font-size: $font-small;
           font-weight: 600;
+          &.current-line {
+            // TODO current line style.
+          }
         }
         div.resizer {
           height: 10px;

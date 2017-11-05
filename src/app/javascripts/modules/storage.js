@@ -3,6 +3,7 @@ import { Raw } from 'slate';
 const log = require('electron-log');
 const storage = require('electron-storage');
 const prevTaskListFilePath = 'prevTaskList/prev.json';
+const prevTaskListFilePathByDisplayName = (displayName) => { return 'prevTaskList/' + displayName.replace(/\s+/g, '') + '/prev.json' }
 
 /**
  * check local file exists or not
@@ -67,13 +68,14 @@ const removeTaskList = (path) => {
  * store taskList data to local storage for the next app started.
  * Expected to be called this function when app reloaded or close app window.
  *
+ * @param  {String} displayName
  * @param  {String} date     YYYYMMDD
  * @param  {State} taskList
  */
-export const storePrevTaskList = (date, taskList) => {
+export const storePrevTaskList = (displayName, date, taskList) => {
   let taskListObject = Raw.serialize(taskList).document
   taskListObject.data.date = date
-  storage.set(prevTaskListFilePath, taskListObject, (error) => {
+  storage.set(prevTaskListFilePathByDisplayName(displayName), taskListObject, (error) => {
     if(error) {
       log.error(error)
     }
@@ -81,14 +83,45 @@ export const storePrevTaskList = (date, taskList) => {
 }
 
 /**
- * get prev taskList from local storage.
+ * get prev taskList by displayName from local storage.
  *
+ * @param  {String} displayName
  * @return {Promise}
  */
-export const getPrevTaskList = () => {
-  return isPathExists(prevTaskListFilePath)
+export const getPrevTaskList = (displayName) => {
+  return isPathExists(prevTaskListFilePathByDisplayName(displayName))
     .then(
-      () => { return getTaskList(prevTaskListFilePath) }
+      () => {
+        return getTaskList(prevTaskListFilePathByDisplayName(displayName))
+      }
+    )
+    .catch(
+      (error) => {
+        if(error.type == 'PathNotExistsError') {
+          // TODO Be called by v0.2.1. It will be unuse from v0.2.2.
+          return isPathExists(prevTaskListFilePath)
+            .then(
+              () => { return getTaskList(prevTaskListFilePath) }
+            )
+        }
+        log.error(error.message)
+        throw error
+      }
+    )
+}
+
+/**
+ * remove prev taskList from local storage.
+ *
+ * @param {String}
+ * @return {Promise}
+ */
+export const removePrevTaskListByDisplayName = (displayName) => {
+  return isPathExists(prevTaskListFilePathByDisplayName(displayName))
+    .then(
+      () => {
+        return removeTaskList(prevTaskListFilePathByDisplayName(displayName))
+      }
     )
     .catch(
       (error) => {
@@ -100,6 +133,7 @@ export const getPrevTaskList = () => {
 
 /**
  * remove prev taskList from local storage.
+ * TODO Be called by v0.2.1. It will be unuse from v0.2.2.
  *
  * @return {Promise}
  */

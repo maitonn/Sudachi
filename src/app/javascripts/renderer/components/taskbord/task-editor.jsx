@@ -111,7 +111,6 @@ const TaskEditor = class TaskEditor extends React.Component {
           state={this.props.taskList}
           onChange={this.onChange.bind(this)}
           onKeyDown={this.onKeyDown.bind(this)}
-          markerPositionTop={this.props.markerPositionTop}
           ref='editor'
         />
       </div>
@@ -243,6 +242,7 @@ const TaskEditor = class TaskEditor extends React.Component {
     } else {
       data = data.set("positionTop", startBlock.data.get("positionTop"))
     }
+    data = data.set('isCurrent', TaskEditorUtil.isCurrentTask(startBlock, data.get('positionTop'), time))
 
     type = type == 'checked-list-item' ? 'check-list-item' : type
     let transform = state
@@ -251,6 +251,14 @@ const TaskEditor = class TaskEditor extends React.Component {
       .setBlock({ data: data })
 
     if (type == 'list-item') transform.wrapBlock('bulleted-list')
+
+    state.document.getClosest(startBlock.key, (parent) => {
+      if(parent.type == 'bulleted-list' && type !== 'list-item') {
+        transform = transform.unwrapBlock('bulleted-list')
+      } else if (parent.type == 'numbered-list' && type !== 'list-item') {
+        transform = transform.unwrapBlock('numbered-list')
+      }
+    })
 
     if (type == 'separator') {
       state =  transform
@@ -340,6 +348,11 @@ const TaskEditor = class TaskEditor extends React.Component {
         data: Data.create({
           positionTop: this.props.nextTaskPositionTop,
           requiredTime: startBlock.data.get("requiredTime"),
+          isCurrent: TaskEditorUtil.isCurrentTask(
+            startBlock,
+            this.props.nextTaskPositionTop,
+            startBlock.data.get('requiredTime')
+          ),
           indent: startBlock.data.get("indent"),
           done: false
         })

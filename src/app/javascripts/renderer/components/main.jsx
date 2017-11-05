@@ -20,9 +20,11 @@ import * as auth from '../infrastructure/auth'
 import * as database from '../infrastructure/database';
 import * as storage from '../../modules/storage';
 import * as migration from '../../modules/migration';
+import { Timer } from '../../modules/timer';
 injectTapEventPlugin();
 
-let intervalIds = [];
+let updateMarkerTimer;
+let saveTaskListTimer;
 const serializedInitialData = require("../../../data/initial.json");
 const initialTaskList = Raw.deserialize(serializedInitialData, { terse: true });
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
@@ -65,7 +67,8 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       };
     case 'UPDATE_MARKER':
       return {
-        markerPositionTop: Constants.markerPositionTop()
+        taskList: action.taskList,
+        markerPositionTop: action.markerPositionTop
       };
     case 'UPDATE_DATE_LIST':
       return {
@@ -113,6 +116,7 @@ class TaskBoard extends React.Component {
   }
 
   updateTask(taskList){
+    if(!!updateMarkerTimer) updateMarkerTimer.reset()
     this.dispatch({
       type: 'UPDATE_TASK',
       taskList: taskList,
@@ -167,7 +171,11 @@ class TaskBoard extends React.Component {
   }
 
   updateMarker(){
-    this.dispatch({ type: 'UPDATE_MARKER' })
+    this.dispatch({
+      type: 'UPDATE_MARKER',
+      markerPositionTop: Constants.markerPositionTop(),
+      taskList: taskListUtil.updateCurrentFlag(this.state.taskList)
+    });
   }
 
   showHowtoContent(){
@@ -201,8 +209,6 @@ class TaskBoard extends React.Component {
     let prevShowInTimelineTaskCount = taskListUtil.getShowInTimelineTaskCount(this.state.taskList)
     if (showInTimelineTaskCount == 0) {
       return Constants.initialPositionTop
-    } else if (showInTimelineTaskCount == prevShowInTimelineTaskCount && date == this.state.date) {
-      return this.state.nextTaskPositionTop
     } else {
       taskList.document.nodes.map((block) => {
         if (block.type == "separator") breaker = true
@@ -228,21 +234,27 @@ class TaskBoard extends React.Component {
     const dateList = this.state.dateList
     this.updateDateList(dateList, dateList[0].date, dateList[dateList.length - 1].date)
 
-    // set interval
-    intervalIds.push(setInterval(() => { this.updateMarker() }, 60000));
+    // set interval for markerPositionTop
+    updateMarkerTimer = new Timer(() => {
+      this.updateMarker()
+    }, Constants.updateMarkerIntervalTime );
+
+    // set interval for store taskList
     let prevTaskList, nextTaskList;
-    intervalIds.push(setInterval(() => {
+    saveTaskListTimer = new Timer(() => {
       nextTaskList = this.state.taskList;
       if(nextTaskList != prevTaskList) {
         this.saveTaskList(this.state.date, nextTaskList);
         prevTaskList = nextTaskList;
       }
-    }, 10000));
+    }, Constants.saveTaskListIntervalTime );
 
     // set onUnload event handler
     window.addEventListener('beforeunload', (e) => {
       e.preventDefault()
-      storage.storePrevTaskList(this.state.date, this.state.taskList);
+      updateMarkerTimer.stop()
+      saveTaskListTimer.stop()
+      storage.storePrevTaskList(this.state.currentUser.displayName, this.state.date, this.state.taskList);
     })
   }
 
@@ -255,24 +267,26 @@ class TaskBoard extends React.Component {
     migration.migrate(currentUser.uid)
       .then(
         // initialize taskList
-        taskListUtil.getInitialTaskList(currentUser.uid, today)
+        taskListUtil.getInitialTaskList(currentUser, today)
           .then(
             (res) => {
               this.updateTask(res.taskList)
               // remove stored prev taskList file.
-              storage.removePrevTaskList()
+              storage.removePrevTaskListByDisplayName(currentUser.displayName)
+                .catch(
+                  (error) => {
+                    // TODO Necessary for v0.2.1. It will be unuse from v0.2.2.
+                    if(error.type == 'PathNotExistsError') {
+                      storage.removePrevTaskList()
+                    }
+                  }
+                )
             }
           )
           .catch(
             (error) => { this.updateTask(initialTaskList) }
           )
       )
-  }
-
-  componentWillUnmount(){
-    _.each(intervalIds, (id) => {
-      clearInterval(id);
-    });
   }
 
   render() {

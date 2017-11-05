@@ -1,5 +1,6 @@
-import { Raw } from 'slate';
+import { Raw, Block } from 'slate';
 import { ipcRenderer } from 'electron';
+import * as taskEditorUtil from './task-editor';
 import * as Constants from '../renderer/components/constants';
 import * as database from '../renderer/infrastructure/database'
 import * as storage from '../modules/storage'
@@ -34,6 +35,16 @@ export const parseStringTaskList = (content) => {
 
 export const isDoneTask = (block) => {
   return block.type == "check-list-item" && block.data.get('done')
+}
+
+/**
+ * whether is separator block or not
+ * @param  {Block}  block
+ * @return {Boolean}
+ */
+
+export const isSeparator = (block) => {
+  return block.type == 'separator'
 }
 
 /**
@@ -120,7 +131,7 @@ export const getShowInTimelineTaskCount = (taskList) => {
 export const getTaskListWithoutDoneTask = (taskList) => {
   let transform = taskList.transform()
   taskList.document.nodes.map((block) => {
-    if (isDoneTask(block)) {
+    if (isDoneTask(block) || isSeparator(block)) {
       transform = transform.removeNodeByKey(block.key)
     }
   })
@@ -154,30 +165,64 @@ export const getTaskListOnlyDoneTask = (taskList) => {
 }
 
 /**
- * get initial taskList.
- * if today's prev taskList exists, return the value,
- * else save prev taskList to firestore and retrieve today's taskList.
+ * get taskList removed blank line.
+ * @param  {State} taskList
+ * @return {State}
+ */
+
+export const getTaskListRemovedBlankLine = (taskList) => {
+  let transform = taskList.transform()
+  taskList.document.nodes.forEach((block) => {
+    if (block.type == paragraph && block.text == '') {
+      transform = transform.removeNodeByKey(block.key)
+    }
+  })
+  return transform.apply()
+}
+
+/**
+ * update current task flag.
  *
- * @param  {String} uid
+ * @param  {State} taskList
+ * @return {State}
+ */
+
+export const updateCurrentFlag = (taskList) => {
+  let transform = taskList.transform()
+  taskList.document.nodes.forEach((targetBlock) => {
+
+    let insertBlock = Block.create({
+      data: targetBlock.data.set('isCurrent', taskEditorUtil.isCurrentTask(targetBlock)),
+      isVoid: targetBlock.isVoid,
+      key: targetBlock.key,
+      nodes: targetBlock.nodes,
+      type: targetBlock.type
+    })
+
+    transform = transform
+      .removeNodeByKey(targetBlock.key)
+      .insertNodeByKey(
+        taskList.document.key,
+        taskList.document.nodes.indexOf(targetBlock),
+        insertBlock
+      )
+  })
+  return transform.apply()
+}
+
+/**
+ * get initial taskList.
+ *
+ * @param  {User} currentUser
  * @param  {String} date YYYYMMDD
  * @return {Promise}      if resolve, containing taskList.
  */
-export const getInitialTaskList = (uid, date) => {
-  return storage.getPrevTaskList()
+export const getInitialTaskList = (currentUser, date) => {
+  return storage.getPrevTaskList(currentUser.displayName)
     .then(
       (res) => {
         log.info('PREV FILE EXSIST.');
-        let prevTaskListDate = res.taskList.document.data.get('date')
-        if (prevTaskListDate == date) {
-          log.info('TODAY\'S PREV FILE EXIST, DATE: ', date)
-          return { taskList: res.taskList }
-        } else {
-          log.info('SAVE PREV FILE TO FIRESTORE, DATE: ', prevTaskListDate)
-          // store prev taskList
-          database.storeTaskList(uid, prevTaskListDate, res.taskList)
-          // retrieve today's taskList
-          return database.fetchTaskList(uid, date)
-        }
+        return mergePrevTaskList(currentUser, res.taskList, date)
       }
     )
     .catch(
@@ -187,4 +232,33 @@ export const getInitialTaskList = (uid, date) => {
         }
       }
     )
+}
+
+/**
+ * get taskList from date and prevTaskList which created from prev.json
+ * if date of prev taskList equals argument date, return prev taskList,
+ * else save prev taskList to firestore and retrieve taskList of argument date.
+ *
+ * @param  {User}  currentUser
+ * @param  {Slate} prevTaskList
+ * @param  {String} date         YYYYMMDD
+ * @return {Promise}              containing taskList
+ */
+
+export const mergePrevTaskList = (currentUser, prevTaskList, date) => {
+  let prevTaskListDate = prevTaskList.document.data.get('date')
+  if (prevTaskListDate == date) {
+    log.info('TODAY\'S PREV FILE EXIST, DATE: ', date)
+    return { taskList: prevTaskList }
+  } else {
+    log.info('SAVE PREV FILE TO FIRESTORE, DATE: ', prevTaskListDate)
+    // store prev taskList
+    return database.storeTaskList(currentUser.uid, prevTaskListDate, prevTaskList)
+      .then(
+        () => {
+          // retrieve today's taskList.
+          return database.fetchTaskList(currentUser.uid, date)
+        }
+      )
+  }
 }
