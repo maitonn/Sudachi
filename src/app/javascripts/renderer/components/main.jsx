@@ -20,9 +20,11 @@ import * as auth from '../infrastructure/auth'
 import * as database from '../infrastructure/database';
 import * as storage from '../../modules/storage';
 import * as migration from '../../modules/migration';
+import { Timer } from '../../modules/timer';
 injectTapEventPlugin();
 
-let intervalIds = [];
+let updateMarkerTimer;
+let saveTaskListTimer;
 const serializedInitialData = require("../../../data/initial.json");
 const initialTaskList = Raw.deserialize(serializedInitialData, { terse: true });
 const HowtoContents = Raw.deserialize(Howto, { terse: true })
@@ -114,6 +116,7 @@ class TaskBoard extends React.Component {
   }
 
   updateTask(taskList){
+    if(!!updateMarkerTimer) updateMarkerTimer.reset()
     this.dispatch({
       type: 'UPDATE_TASK',
       taskList: taskList,
@@ -167,11 +170,11 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'UPDATE_DRAG_TARGET_POSITION_TOP', dragTargetPositionTop: dragTargetPositionTop})
   }
 
-  updateMarker(markerPositionTop, taskList){
+  updateMarker(){
     this.dispatch({
       type: 'UPDATE_MARKER',
-      markerPositionTop: markerPositionTop,
-      taskList: taskList
+      markerPositionTop: Constants.markerPositionTop(),
+      taskList: taskListUtil.updateCurrentFlag(this.state.taskList)
     });
   }
 
@@ -232,25 +235,25 @@ class TaskBoard extends React.Component {
     this.updateDateList(dateList, dateList[0].date, dateList[dateList.length - 1].date)
 
     // set interval for markerPositionTop
-    intervalIds.push(setInterval(() => {
-      let nextMarkerPositionTop = Constants.markerPositionTop()
-      let nextTaskList = taskListUtil.updateCurrentFlag(this.state.taskList)
-      this.updateMarker(nextMarkerPositionTop, nextTaskList)
-    }, 60000));
+    updateMarkerTimer = new Timer(() => {
+      this.updateMarker()
+    }, Constants.updateMarkerIntervalTime );
 
     // set interval for store taskList
     let prevTaskList, nextTaskList;
-    intervalIds.push(setInterval(() => {
+    saveTaskListTimer = new Timer(() => {
       nextTaskList = this.state.taskList;
       if(nextTaskList != prevTaskList) {
         this.saveTaskList(this.state.date, nextTaskList);
         prevTaskList = nextTaskList;
       }
-    }, 10000));
+    }, Constants.saveTaskListIntervalTime );
 
     // set onUnload event handler
     window.addEventListener('beforeunload', (e) => {
       e.preventDefault()
+      updateMarkerTimer.stop()
+      saveTaskListTimer.stop()
       storage.storePrevTaskList(this.state.currentUser.displayName, this.state.date, this.state.taskList);
     })
   }
@@ -284,12 +287,6 @@ class TaskBoard extends React.Component {
             (error) => { this.updateTask(initialTaskList) }
           )
       )
-  }
-
-  componentWillUnmount(){
-    _.each(intervalIds, (id) => {
-      clearInterval(id);
-    });
   }
 
   render() {
