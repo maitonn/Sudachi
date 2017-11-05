@@ -1,5 +1,6 @@
-import { Raw } from 'slate';
+import { Raw, Block } from 'slate';
 import { ipcRenderer } from 'electron';
+import * as taskEditorUtil from './task-editor';
 import * as Constants from '../renderer/components/constants';
 import * as database from '../renderer/infrastructure/database'
 import * as storage from '../modules/storage'
@@ -39,7 +40,7 @@ export const isDoneTask = (block) => {
 /**
  * whether is separator block or not
  * @param  {Block}  block
- * @return {Boolean}       
+ * @return {Boolean}
  */
 
 export const isSeparator = (block) => {
@@ -175,6 +176,37 @@ export const getTaskListRemovedBlankLine = (taskList) => {
     if (block.type == paragraph && block.text == '') {
       transform = transform.removeNodeByKey(block.key)
     }
+  })
+  return transform.apply()
+}
+
+/**
+ * update current task flag.
+ *
+ * @param  {State} taskList
+ * @return {State}          
+ */
+
+export const updateCurrentFlag = (taskList) => {
+  console.log('update current flag')
+  let transform = taskList.transform()
+  taskList.document.nodes.forEach((targetBlock) => {
+
+    let insertBlock = Block.create({
+      data: targetBlock.data.set('isCurrent', taskEditorUtil.isCurrentTask(targetBlock)),
+      isVoid: targetBlock.isVoid,
+      key: targetBlock.key,
+      nodes: targetBlock.nodes,
+      type: targetBlock.type
+    })
+
+    transform = transform
+      .removeNodeByKey(targetBlock.key)
+      .insertNodeByKey(
+        taskList.document.key,
+        taskList.document.nodes.indexOf(targetBlock),
+        insertBlock
+      )
   })
   return transform.apply()
 }

@@ -65,7 +65,8 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       };
     case 'UPDATE_MARKER':
       return {
-        markerPositionTop: Constants.markerPositionTop()
+        taskList: action.taskList,
+        markerPositionTop: action.markerPositionTop
       };
     case 'UPDATE_DATE_LIST':
       return {
@@ -166,8 +167,12 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'UPDATE_DRAG_TARGET_POSITION_TOP', dragTargetPositionTop: dragTargetPositionTop})
   }
 
-  updateMarker(){
-    this.dispatch({ type: 'UPDATE_MARKER' })
+  updateMarker(markerPositionTop, taskList){
+    this.dispatch({
+      type: 'UPDATE_MARKER',
+      markerPositionTop: markerPositionTop,
+      taskList: taskList
+    });
   }
 
   showHowtoContent(){
@@ -226,8 +231,14 @@ class TaskBoard extends React.Component {
     const dateList = this.state.dateList
     this.updateDateList(dateList, dateList[0].date, dateList[dateList.length - 1].date)
 
-    // set interval
-    intervalIds.push(setInterval(() => { this.updateMarker() }, 60000));
+    // set interval for markerPositionTop
+    intervalIds.push(setInterval(() => {
+      let nextMarkerPositionTop = Constants.markerPositionTop()
+      let nextTaskList = taskListUtil.updateCurrentFlag(this.state.taskList)
+      this.updateMarker(nextMarkerPositionTop, nextTaskList)
+    }, 60000));
+
+    // set interval for store taskList
     let prevTaskList, nextTaskList;
     intervalIds.push(setInterval(() => {
       nextTaskList = this.state.taskList;

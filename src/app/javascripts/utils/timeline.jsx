@@ -1,5 +1,6 @@
 import * as Constants from '../renderer/components/constants';
 import { Block} from 'slate';
+import * as taskEditorUtil from './task-editor';
 
 /**
  * get task position bottom.
@@ -43,10 +44,12 @@ export const setTaskPositionTop = (taskList, taskKey, positionTop) => {
     if (block.key == taskKey) targetBlock = block
   })
 
-  if (targetBlock.data.get("positionTop") == positionTop) return taskList
+  if (targetBlock.data.get('positionTop') == positionTop) return taskList
 
   let insertBlock = Block.create({
-    data: targetBlock.data.set("positionTop", positionTop),
+    data: targetBlock.data
+      .set('positionTop', positionTop)
+      .set('isCurrent', taskEditorUtil.isCurrentTask(targetBlock, positionTop)),
     isVoid: targetBlock.isVoid,
     key: targetBlock.key,
     nodes: targetBlock.nodes,
@@ -82,7 +85,13 @@ export const setTaskRequiredTime = (taskList, taskKey, requiredTime) => {
   if (targetBlock.data.get("requiredTime") == requiredTime) return taskList
 
   let insertBlock = Block.create({
-    data: targetBlock.data.set("requiredTime", requiredTime),
+    data: targetBlock.data
+      .set("requiredTime", requiredTime)
+      .set('isCurrent', taskEditorUtil.isCurrentTask(
+        targetBlock,
+        targetBlock.data.get('positionTop'),
+        requiredTime)
+      ),
     isVoid: targetBlock.isVoid,
     key: targetBlock.key,
     nodes: targetBlock.nodes,
