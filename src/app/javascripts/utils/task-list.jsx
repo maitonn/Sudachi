@@ -184,11 +184,10 @@ export const getTaskListRemovedBlankLine = (taskList) => {
  * update current task flag.
  *
  * @param  {State} taskList
- * @return {State}          
+ * @return {State}
  */
 
 export const updateCurrentFlag = (taskList) => {
-  console.log('update current flag')
   let transform = taskList.transform()
   taskList.document.nodes.forEach((targetBlock) => {
 

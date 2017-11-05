@@ -138,7 +138,6 @@ export const removePrevTaskListByDisplayName = (displayName) => {
  * @return {Promise}
  */
 export const removePrevTaskList = () => {
-  console.log('remove prev task list!')
   return isPathExists(prevTaskListFilePath)
     .then(
       () => { return removeTaskList(prevTaskListFilePath) }
