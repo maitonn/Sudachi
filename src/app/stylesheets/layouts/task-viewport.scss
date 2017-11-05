@@ -24,7 +24,7 @@
       background-color: $ligh-gray-line;
     }
     &.current-task {
-      background-color: $indigo-lighter;
+      background-color: $current-lighter;
     }
     li {
       div { pointer-events: none }
