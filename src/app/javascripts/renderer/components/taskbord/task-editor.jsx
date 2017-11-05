@@ -242,6 +242,7 @@ const TaskEditor = class TaskEditor extends React.Component {
     } else {
       data = data.set("positionTop", startBlock.data.get("positionTop"))
     }
+    data = data.set('isCurrent', TaskEditorUtil.isCurrentTask(startBlock, data.get('positionTop'), time))
 
     type = type == 'checked-list-item' ? 'check-list-item' : type
     let transform = state
@@ -347,6 +348,11 @@ const TaskEditor = class TaskEditor extends React.Component {
         data: Data.create({
           positionTop: this.props.nextTaskPositionTop,
           requiredTime: startBlock.data.get("requiredTime"),
+          isCurrent: TaskEditorUtil.isCurrentTask(
+            startBlock,
+            this.props.nextTaskPositionTop,
+            startBlock.data.get('requiredTime')
+          ),
           indent: startBlock.data.get("indent"),
           done: false
         })
