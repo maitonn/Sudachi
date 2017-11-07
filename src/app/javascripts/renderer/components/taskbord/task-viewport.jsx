@@ -87,7 +87,7 @@ const TaskViewport = class TaskViewport extends React.Component {
         moment([this.props.date.slice(0,4), this.props.date.slice(4,6), this.props.date.slice(6,8)].join("-")).format("YYYY.M.D ddd")
       )
     } else {
-      return "Howto"
+      return "How to"
     }
   }
 
