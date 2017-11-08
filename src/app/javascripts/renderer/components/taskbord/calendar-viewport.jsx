@@ -113,7 +113,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
         >
           <MenuItem
             onMouseDown={this.props.onSignOut}
-            primaryText="Sing out"
+            primaryText="Sign out"
             style={{
               backgroundColor: '#fff',
               color: '#464646',
