@@ -229,7 +229,7 @@ export const getInitialTaskList = (currentUser, date) => {
     .catch(
       (error) => {
         if (error.type == 'PathNotExistsError') {
-          return database.fetchTaskList(uid, date)
+          return database.fetchTaskList(currentUser.uid, date)
         }
       }
     )
