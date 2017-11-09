@@ -38,7 +38,8 @@ const taskBoardDefaultState = {
   dragTargetPositionTop: Constants.initialDragTargetPositionTop,
   markerPositionTop: Constants.markerPositionTop(),
   showHistory: true,
-  dateList: Constants.initialDateList()
+  dateList: Constants.initialDateList(),
+  synced: true
 }
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
@@ -51,7 +52,8 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       return {
         taskList: action.taskList,
         nextTaskPositionTop: action.nextTaskPositionTop,
-        dateList: action.dateList
+        dateList: action.dateList,
+        synced: false
       };
     case 'UPDATE_DATE':
       return {
@@ -86,6 +88,10 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
     case 'HIDE_HISTORY':
       return {
         showHistory: false
+      };
+    case 'SYNCED':
+      return {
+        synced: action.synced
       };
     default:
       return state;
@@ -191,13 +197,20 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'HIDE_HISTORY' })
   }
 
+  synced(){
+    this.dispatch({ type: 'SYNCED', synced: true })
+  }
+
   isStorableTaskList(){
     return ((! this.state.showHowto) && this.state.currentUser !== null)
   }
 
   saveTaskList(date, taskList){
     if (this.isStorableTaskList()) {
-      database.storeTaskList(this.state.currentUser.uid, date, taskList)
+      return database.storeTaskList(this.state.currentUser.uid, date, taskList)
+        .then(
+          () => { this.synced() }
+        )
     }
   }
 
@@ -249,12 +262,13 @@ class TaskBoard extends React.Component {
       }
     }, Constants.saveTaskListIntervalTime );
 
-    // set onUnload event handler
-    window.addEventListener('beforeunload', (e) => {
-      e.preventDefault()
+    // set store and stop event called from main process via ipc.
+    ipcRenderer.on('application:quit', (e, data) => {
+      if (! this.state.synced) {
+        this.saveTaskList(this.state.date, this.state.taskList)
+      }
       updateMarkerTimer.stop()
       saveTaskListTimer.stop()
-      storage.storePrevTaskList(this.state.currentUser.displayName, this.state.date, this.state.taskList);
     })
   }
 
@@ -263,29 +277,17 @@ class TaskBoard extends React.Component {
     const currentUser = auth.getCurrentUser();
     this.setCurrentUser(currentUser);
 
-    // migration local taskList file.
-    migration.migrate(currentUser.uid)
+    // initialize taskList
+    taskListUtil.getInitialTaskList(currentUser, today)
       .then(
-        // initialize taskList
-        taskListUtil.getInitialTaskList(currentUser, today)
-          .then(
-            (res) => {
-              this.updateTask(res.taskList)
-              // remove stored prev taskList file.
-              storage.removePrevTaskListByDisplayName(currentUser.displayName)
-                .catch(
-                  (error) => {
-                    // TODO Necessary for v0.2.1. It will be unuse from v0.2.2.
-                    if(error.type == 'PathNotExistsError') {
-                      storage.removePrevTaskList()
-                    }
-                  }
-                )
-            }
-          )
-          .catch(
-            (error) => { this.updateTask(initialTaskList) }
-          )
+        (res) => {
+          this.updateTask(res.taskList)
+          // remove stored prev taskList file.
+          storage.removePrevTaskListByDisplayName(currentUser.displayName)
+        }
+      )
+      .catch(
+        (error) => { this.updateTask(initialTaskList) }
       )
   }
 

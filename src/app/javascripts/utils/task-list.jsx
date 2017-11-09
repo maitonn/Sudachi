@@ -218,6 +218,7 @@ export const updateCurrentFlag = (taskList) => {
  * @return {Promise}      if resolve, containing taskList.
  */
 export const getInitialTaskList = (currentUser, date) => {
+  // TODO this code is called by only v0.2.2.
   return storage.getPrevTaskList(currentUser.displayName)
     .then(
       (res) => {

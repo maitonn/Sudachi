@@ -97,13 +97,6 @@ export const getPrevTaskList = (displayName) => {
     )
     .catch(
       (error) => {
-        if(error.type == 'PathNotExistsError') {
-          // TODO Be called by v0.2.1. It will be unuse from v0.2.2.
-          return isPathExists(prevTaskListFilePath)
-            .then(
-              () => { return getTaskList(prevTaskListFilePath) }
-            )
-        }
         log.error(error.message)
         throw error
       }
