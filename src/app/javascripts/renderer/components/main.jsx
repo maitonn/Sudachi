@@ -202,7 +202,11 @@ class TaskBoard extends React.Component {
   }
 
   isStorableTaskList(){
-    return ((! this.state.showHowto) && this.state.currentUser !== null)
+    return (
+      (! this.state.synced)
+        && (! this.state.showHowto)
+        && this.state.currentUser !== null
+    )
   }
 
   saveTaskList(date, taskList){
@@ -264,9 +268,7 @@ class TaskBoard extends React.Component {
 
     // set store and stop event called from main process via ipc.
     ipcRenderer.on('application:quit', (e, data) => {
-      if (! this.state.synced) {
-        this.saveTaskList(this.state.date, this.state.taskList)
-      }
+      this.saveTaskList(this.state.date, this.state.taskList)
       updateMarkerTimer.stop()
       saveTaskListTimer.stop()
     })
