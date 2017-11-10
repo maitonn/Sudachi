@@ -115,10 +115,12 @@ class TaskBoard extends React.Component {
   }
 
   removeCrrentUser(){
-    auth.signOut();
-    this.dispatch({ type: 'UPDATE_CURRENT_USER', currentUser: null });
-    const root = document.getElementById('root');
-    ReactDOM.render(React.createElement(loginComponet), root);
+    return auth.signOut()
+      .then(
+        () => {
+          this.dispatch({ type: 'UPDATE_CURRENT_USER', currentUser: null });
+        }
+      )
   }
 
   updateTask(taskList){
@@ -201,6 +203,35 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'SYNCED', synced: true })
   }
 
+  signOut(){
+    this.terminateTaskBoard()
+      .then(
+        () => { this.leaveTaskBoard() }
+      )
+      .catch(
+        (error) => {
+          log.error(error.message)
+          this.leaveTaskBoard()
+        }
+      )
+  }
+
+  terminateTaskBoard(){
+    updateMarkerTimer.stop()
+    saveTaskListTimer.stop()
+    return this.saveTaskList(this.state.date, this.state.taskList)
+  }
+
+  leaveTaskBoard(){
+    this.removeCrrentUser()
+      .then(
+        () => {
+          const root = document.getElementById('root');
+          ReactDOM.render(React.createElement(loginComponet), root);
+        }
+      )
+  }
+
   isStorableTaskList(){
     return (
       (! this.state.synced)
@@ -215,6 +246,8 @@ class TaskBoard extends React.Component {
         .then(
           () => { this.synced() }
         )
+    } else {
+      return Promise.resolve()
     }
   }
 
@@ -268,9 +301,7 @@ class TaskBoard extends React.Component {
 
     // set store and stop event called from main process via ipc.
     ipcRenderer.on('application:quit', (e, data) => {
-      this.saveTaskList(this.state.date, this.state.taskList)
-      updateMarkerTimer.stop()
-      saveTaskListTimer.stop()
+      this.terminateTaskBoard()
     })
   }
 
@@ -301,7 +332,7 @@ class TaskBoard extends React.Component {
             <CalendarViewport
               date={this.state.date}
               taskList={this.state.taskList}
-              onSignOut={this.removeCrrentUser.bind(this)}
+              onSignOut={this.signOut.bind(this)}
               onUpdateDate={this.updateDate.bind(this)}
               onUpdateDateList={this.updateDateList.bind(this)}
               showHistoryMenu={this.showHistoryMenu.bind(this)}
