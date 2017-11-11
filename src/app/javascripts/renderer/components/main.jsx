@@ -38,7 +38,8 @@ const taskBoardDefaultState = {
   dragTargetPositionTop: Constants.initialDragTargetPositionTop,
   markerPositionTop: Constants.markerPositionTop(),
   showHistory: true,
-  dateList: Constants.initialDateList()
+  dateList: Constants.initialDateList(),
+  synced: true
 }
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
@@ -51,7 +52,8 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       return {
         taskList: action.taskList,
         nextTaskPositionTop: action.nextTaskPositionTop,
-        dateList: action.dateList
+        dateList: action.dateList,
+        synced: false
       };
     case 'UPDATE_DATE':
       return {
@@ -87,6 +89,10 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       return {
         showHistory: false
       };
+    case 'SYNCED':
+      return {
+        synced: action.synced
+      };
     default:
       return state;
   }
@@ -109,10 +115,12 @@ class TaskBoard extends React.Component {
   }
 
   removeCrrentUser(){
-    auth.signOut();
-    this.dispatch({ type: 'UPDATE_CURRENT_USER', currentUser: null });
-    const root = document.getElementById('root');
-    ReactDOM.render(React.createElement(loginComponet), root);
+    return auth.signOut()
+      .then(
+        () => {
+          this.dispatch({ type: 'UPDATE_CURRENT_USER', currentUser: null });
+        }
+      )
   }
 
   updateTask(taskList){
@@ -191,13 +199,55 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'HIDE_HISTORY' })
   }
 
+  synced(){
+    this.dispatch({ type: 'SYNCED', synced: true })
+  }
+
+  signOut(){
+    this.terminateTaskBoard()
+      .then(
+        () => { this.leaveTaskBoard() }
+      )
+      .catch(
+        (error) => {
+          log.error(error.message)
+          this.leaveTaskBoard()
+        }
+      )
+  }
+
+  terminateTaskBoard(){
+    updateMarkerTimer.stop()
+    saveTaskListTimer.stop()
+    return this.saveTaskList(this.state.date, this.state.taskList)
+  }
+
+  leaveTaskBoard(){
+    this.removeCrrentUser()
+      .then(
+        () => {
+          const root = document.getElementById('root');
+          ReactDOM.render(React.createElement(loginComponet), root);
+        }
+      )
+  }
+
   isStorableTaskList(){
-    return ((! this.state.showHowto) && this.state.currentUser !== null)
+    return (
+      (! this.state.synced)
+        && (! this.state.showHowto)
+        && this.state.currentUser !== null
+    )
   }
 
   saveTaskList(date, taskList){
     if (this.isStorableTaskList()) {
-      database.storeTaskList(this.state.currentUser.uid, date, taskList)
+      return database.storeTaskList(this.state.currentUser.uid, date, taskList)
+        .then(
+          () => { this.synced() }
+        )
+    } else {
+      return Promise.resolve()
     }
   }
 
@@ -249,12 +299,9 @@ class TaskBoard extends React.Component {
       }
     }, Constants.saveTaskListIntervalTime );
 
-    // set onUnload event handler
-    window.addEventListener('beforeunload', (e) => {
-      e.preventDefault()
-      updateMarkerTimer.stop()
-      saveTaskListTimer.stop()
-      storage.storePrevTaskList(this.state.currentUser.displayName, this.state.date, this.state.taskList);
+    // set store and stop event called from main process via ipc.
+    ipcRenderer.on('application:quit', (e, data) => {
+      this.terminateTaskBoard()
     })
   }
 
@@ -263,29 +310,17 @@ class TaskBoard extends React.Component {
     const currentUser = auth.getCurrentUser();
     this.setCurrentUser(currentUser);
 
-    // migration local taskList file.
-    migration.migrate(currentUser.uid)
+    // initialize taskList
+    taskListUtil.getInitialTaskList(currentUser, today)
       .then(
-        // initialize taskList
-        taskListUtil.getInitialTaskList(currentUser, today)
-          .then(
-            (res) => {
-              this.updateTask(res.taskList)
-              // remove stored prev taskList file.
-              storage.removePrevTaskListByDisplayName(currentUser.displayName)
-                .catch(
-                  (error) => {
-                    // TODO Necessary for v0.2.1. It will be unuse from v0.2.2.
-                    if(error.type == 'PathNotExistsError') {
-                      storage.removePrevTaskList()
-                    }
-                  }
-                )
-            }
-          )
-          .catch(
-            (error) => { this.updateTask(initialTaskList) }
-          )
+        (res) => {
+          this.updateTask(res.taskList)
+          // remove stored prev taskList file.
+          storage.removePrevTaskListByDisplayName(currentUser.displayName)
+        }
+      )
+      .catch(
+        (error) => { this.updateTask(initialTaskList) }
       )
   }
 
@@ -297,7 +332,7 @@ class TaskBoard extends React.Component {
             <CalendarViewport
               date={this.state.date}
               taskList={this.state.taskList}
-              onSignOut={this.removeCrrentUser.bind(this)}
+              onSignOut={this.signOut.bind(this)}
               onUpdateDate={this.updateDate.bind(this)}
               onUpdateDateList={this.updateDateList.bind(this)}
               showHistoryMenu={this.showHistoryMenu.bind(this)}

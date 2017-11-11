@@ -19,6 +19,9 @@ autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
+let Promise = require('bluebird');
+let exiting = false
+
 // for ipc.
 ipcMain.on('getTaskList', (event, date) => {
   let path = 'taskList/' + date + '.json'
@@ -87,9 +90,24 @@ app.on('ready', () => {
     'file://' + __dirname + '/../../html/index.html'
   );
   installMenu()
+
+  mainWindow.on('close', (e) => {
+    mainWindow.webContents.send('application:quit')
+    if(!exiting) {
+      Promise.delay(1000).then(function(){
+        mainWindow.close();
+      });
+      exiting = true
+      e.preventDefault()
+    }
+  });
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+});
+
+app.on('window-all-closed', function () {
+  app.quit();
 });
 
 function installMenu() {
