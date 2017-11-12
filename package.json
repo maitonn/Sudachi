@@ -2,7 +2,7 @@
   "name": "Sudachi-beta",
   "version": "0.2.2",
   "author": "ktp",
-  "repository": "http://github.com/kato1628/Sudachi",
+  "repository": "http://github.com/sudachiapp/releases",
   "description": "Sudachi is a desktop application for daily personal scheduling.",
   "build": {
     "appId": "io.sudachi",
@@ -17,7 +17,7 @@
       "publish": [
         {
           "provider": "github",
-          "owner": "kato1628"
+          "owner": "sudachiapp"
         }
       ]
     },
@@ -27,7 +27,7 @@
       "publish": [
         {
           "provider": "github",
-          "owner": "kato1628"
+          "owner": "sudachiapp"
         }
       ]
     }
