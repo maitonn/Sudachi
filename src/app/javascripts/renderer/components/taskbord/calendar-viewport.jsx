@@ -42,6 +42,19 @@ const CalendarViewport = class CalendarViewport extends React.Component {
     this.props.onUpdateDateList(dateList, dateRange[dateRange.length - 1], dateTo);
   }
 
+  syncStateLabel(){
+    switch (this.props.syncStatus) {
+      case Constants.syncStatuses.notSynced: return this.props.syncedAt
+      case Constants.syncStatuses.syncing: return 'Syncing...'
+      case Constants.syncStatuses.synced: return this.props.syncedAt
+      default: ''
+    }
+  }
+
+  isSyncing(){
+    return this.props.syncStatus == Constants.syncStatuses.syncing
+  }
+
   renderMenuItem() {
     let items = []
     let innerDivStyle = {}
@@ -145,8 +158,11 @@ const CalendarViewport = class CalendarViewport extends React.Component {
               </div>
               <span className="user-email">{this.props.currentUser ? this.props.currentUser.email : ''}</span>
             </div>
-            <div style={{overflow: "scroll", height: "calc(100% - 110px)"}}>
+            <div style={{overflow: "scroll", height: "calc(100% - 130px)"}}>
               {this.renderMenuItem()}
+            </div>
+            <div className="sync-status">
+              <span className="material-icons">{this.isSyncing() ? 'cached' : 'done'}</span><span className="sync-status-label">{this.syncStateLabel()}</span>
             </div>
           </Drawer>
         </div>

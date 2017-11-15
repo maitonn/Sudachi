@@ -39,7 +39,8 @@ const taskBoardDefaultState = {
   markerPositionTop: Constants.markerPositionTop(),
   showHistory: true,
   dateList: Constants.initialDateList(),
-  synced: true
+  syncStatus: Constants.syncStatuses.synced,
+  syncedAt: moment().format('YYYY/MM/DD hh:mm:ss')
 }
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
@@ -53,7 +54,7 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
         taskList: action.taskList,
         nextTaskPositionTop: action.nextTaskPositionTop,
         dateList: action.dateList,
-        synced: false
+        syncStatus: Constants.syncStatuses.notSynced
       };
     case 'UPDATE_DATE':
       return {
@@ -89,9 +90,10 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       return {
         showHistory: false
       };
-    case 'SYNCED':
+    case 'UPDATE_SYNC_STATUS':
       return {
-        synced: action.synced
+        syncStatus: action.syncStatus,
+        syncedAt: action.syncedAt
       };
     default:
       return state;
@@ -199,8 +201,12 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'HIDE_HISTORY' })
   }
 
-  synced(){
-    this.dispatch({ type: 'SYNCED', synced: true })
+  updateSyncStatus(syncStatus, syncedAt){
+    this.dispatch({
+      type: 'UPDATE_SYNC_STATUS',
+      syncStatus: syncStatus,
+      syncedAt: syncedAt || this.state.syncedAt
+    })
   }
 
   signOut(){
@@ -232,9 +238,13 @@ class TaskBoard extends React.Component {
       )
   }
 
+  isNotSynced() {
+    return this.state.syncStatus == Constants.syncStatuses.notSynced
+  }
+
   isStorableTaskList(){
     return (
-      (! this.state.synced)
+      this.isNotSynced()
         && (! this.state.showHowto)
         && this.state.currentUser !== null
     )
@@ -242,9 +252,15 @@ class TaskBoard extends React.Component {
 
   saveTaskList(date, taskList){
     if (this.isStorableTaskList()) {
+      this.updateSyncStatus(Constants.syncStatuses.syncing)
       return database.storeTaskList(this.state.currentUser.uid, date, taskList)
         .then(
-          () => { this.synced() }
+          () => {
+            this.updateSyncStatus(
+              Constants.syncStatuses.synced,
+              moment().format('YYYY/MM/DD hh:mm:ss')
+            )
+          }
         )
     } else {
       return Promise.resolve()
@@ -290,13 +306,8 @@ class TaskBoard extends React.Component {
     }, Constants.updateMarkerIntervalTime );
 
     // set interval for store taskList
-    let prevTaskList, nextTaskList;
     saveTaskListTimer = new Timer(() => {
-      nextTaskList = this.state.taskList;
-      if(nextTaskList != prevTaskList) {
-        this.saveTaskList(this.state.date, nextTaskList);
-        prevTaskList = nextTaskList;
-      }
+      this.saveTaskList(this.state.date, this.state.taskList);
     }, Constants.saveTaskListIntervalTime );
 
     // set store and stop event called from main process via ipc.
@@ -340,6 +351,8 @@ class TaskBoard extends React.Component {
               dateList={this.state.dateList}
               showHistory={this.state.showHistory}
               currentUser={this.state.currentUser}
+              syncStatus={this.state.syncStatus}
+              syncedAt={this.state.syncedAt}
             />
             <TaskViewport
               date={this.state.date}

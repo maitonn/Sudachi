@@ -5,10 +5,16 @@ export const Types = {
   TASK: "task"
 }
 
+export const syncStatuses = {
+  notSynced: 0,
+  syncing:   1,
+  synced:    2
+}
+
 export const default_node = 'paragraph'
 
 export const updateMarkerIntervalTime = 60000
-export const saveTaskListIntervalTime = 10000
+export const saveTaskListIntervalTime = 30000
 
 export const showInTimeline = [
   "paragraph",
