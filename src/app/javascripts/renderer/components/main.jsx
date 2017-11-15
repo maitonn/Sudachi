@@ -39,7 +39,7 @@ const taskBoardDefaultState = {
   markerPositionTop: Constants.markerPositionTop(),
   showHistory: true,
   dateList: Constants.initialDateList(),
-  synced: true
+  syncStatus: Constants.syncStatuses.synced
 }
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
@@ -53,7 +53,7 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
         taskList: action.taskList,
         nextTaskPositionTop: action.nextTaskPositionTop,
         dateList: action.dateList,
-        synced: false
+        syncStatus: Constants.syncStatuses.notSynced
       };
     case 'UPDATE_DATE':
       return {
@@ -89,9 +89,9 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       return {
         showHistory: false
       };
-    case 'SYNCED':
+    case 'UPDATE_SYNC_STATUS':
       return {
-        synced: action.synced
+        syncStatus: action.syncStatus
       };
     default:
       return state;
@@ -199,8 +199,8 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'HIDE_HISTORY' })
   }
 
-  synced(){
-    this.dispatch({ type: 'SYNCED', synced: true })
+  updateSyncStatus(syncStatus){
+    this.dispatch({ type: 'UPDATE_SYNC_STATUS', syncStatus: syncStatus })
   }
 
   signOut(){
@@ -232,9 +232,13 @@ class TaskBoard extends React.Component {
       )
   }
 
+  isNotSynced() {
+    return this.state.syncStatus == Constants.syncStatuses.notSynced
+  }
+
   isStorableTaskList(){
     return (
-      (! this.state.synced)
+      this.isNotSynced()
         && (! this.state.showHowto)
         && this.state.currentUser !== null
     )
@@ -242,9 +246,10 @@ class TaskBoard extends React.Component {
 
   saveTaskList(date, taskList){
     if (this.isStorableTaskList()) {
+      this.updateSyncStatus(Constants.syncStatuses.syncing)
       return database.storeTaskList(this.state.currentUser.uid, date, taskList)
         .then(
-          () => { this.synced() }
+          () => { this.updateSyncStatus(Constants.syncStatuses.synced) }
         )
     } else {
       return Promise.resolve()
