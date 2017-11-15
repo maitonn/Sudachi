@@ -173,7 +173,7 @@ export const getTaskListOnlyDoneTask = (taskList) => {
 export const getTaskListRemovedBlankLine = (taskList) => {
   let transform = taskList.transform()
   taskList.document.nodes.forEach((block) => {
-    if (block.type == paragraph && block.text == '') {
+    if (block.type == 'paragraph' && block.text == '') {
       transform = transform.removeNodeByKey(block.key)
     }
   })
