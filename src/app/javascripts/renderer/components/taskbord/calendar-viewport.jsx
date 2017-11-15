@@ -45,7 +45,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
   syncStateLabel(){
     switch (this.props.syncStatus) {
       case Constants.syncStatuses.notSynced: return this.props.syncedAt
-      case Constants.syncStatuses.syncing: return 'Syncing'
+      case Constants.syncStatuses.syncing: return 'Syncing...'
       case Constants.syncStatuses.synced: return this.props.syncedAt
       default: ''
     }
@@ -162,7 +162,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
               {this.renderMenuItem()}
             </div>
             <div className="sync-status">
-              <span className="material-icons done">{this.isSyncing() ? 'cached' : 'done'}</span><span className="sync-status-label">{this.syncStateLabel()}</span>
+              <span className="material-icons">{this.isSyncing() ? 'cached' : 'done'}</span><span className="sync-status-label">{this.syncStateLabel()}</span>
             </div>
           </Drawer>
         </div>
