@@ -62,7 +62,8 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
         taskList: action.taskList,
         nextTaskPositionTop: action.nextTaskPositionTop,
         dateList: action.dateList,
-        showHowto: false
+        showHowto: false,
+        syncStatus: Constants.syncStatuses.notSynced
       };
     case 'UPDATE_DRAG_TARGET_POSITION_TOP':
       return {
