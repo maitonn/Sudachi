@@ -290,13 +290,8 @@ class TaskBoard extends React.Component {
     }, Constants.updateMarkerIntervalTime );
 
     // set interval for store taskList
-    let prevTaskList, nextTaskList;
     saveTaskListTimer = new Timer(() => {
-      nextTaskList = this.state.taskList;
-      if(nextTaskList != prevTaskList) {
-        this.saveTaskList(this.state.date, nextTaskList);
-        prevTaskList = nextTaskList;
-      }
+      this.saveTaskList(this.state.date, this.state.taskList);
     }, Constants.saveTaskListIntervalTime );
 
     // set store and stop event called from main process via ipc.

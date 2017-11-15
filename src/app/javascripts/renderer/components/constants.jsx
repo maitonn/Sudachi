@@ -8,7 +8,7 @@ export const Types = {
 export const default_node = 'paragraph'
 
 export const updateMarkerIntervalTime = 60000
-export const saveTaskListIntervalTime = 10000
+export const saveTaskListIntervalTime = 30000
 
 export const showInTimeline = [
   "paragraph",
