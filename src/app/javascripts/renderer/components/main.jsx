@@ -39,7 +39,8 @@ const taskBoardDefaultState = {
   markerPositionTop: Constants.markerPositionTop(),
   showHistory: true,
   dateList: Constants.initialDateList(),
-  syncStatus: Constants.syncStatuses.synced
+  syncStatus: Constants.syncStatuses.synced,
+  syncedAt: moment().format('YYYY/MM/DD hh:mm:ss')
 }
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
@@ -91,7 +92,8 @@ const taskBoardReducer = (state = taskBoardDefaultState, action) => {
       };
     case 'UPDATE_SYNC_STATUS':
       return {
-        syncStatus: action.syncStatus
+        syncStatus: action.syncStatus,
+        syncedAt: action.syncedAt
       };
     default:
       return state;
@@ -199,8 +201,12 @@ class TaskBoard extends React.Component {
     this.dispatch({ type: 'HIDE_HISTORY' })
   }
 
-  updateSyncStatus(syncStatus){
-    this.dispatch({ type: 'UPDATE_SYNC_STATUS', syncStatus: syncStatus })
+  updateSyncStatus(syncStatus, syncedAt){
+    this.dispatch({
+      type: 'UPDATE_SYNC_STATUS',
+      syncStatus: syncStatus,
+      syncedAt: syncedAt || this.state.syncedAt
+    })
   }
 
   signOut(){
@@ -249,7 +255,12 @@ class TaskBoard extends React.Component {
       this.updateSyncStatus(Constants.syncStatuses.syncing)
       return database.storeTaskList(this.state.currentUser.uid, date, taskList)
         .then(
-          () => { this.updateSyncStatus(Constants.syncStatuses.synced) }
+          () => {
+            this.updateSyncStatus(
+              Constants.syncStatuses.synced,
+              moment().format('YYYY/MM/DD hh:mm:ss')
+            )
+          }
         )
     } else {
       return Promise.resolve()
@@ -340,6 +351,8 @@ class TaskBoard extends React.Component {
               dateList={this.state.dateList}
               showHistory={this.state.showHistory}
               currentUser={this.state.currentUser}
+              syncStatus={this.state.syncStatus}
+              syncedAt={this.state.syncedAt}
             />
             <TaskViewport
               date={this.state.date}
