@@ -200,7 +200,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
                 <div
                   className="nowmarker"
                   style={{
-                    top: this.props.markerPositionTop.toString() + 'px',
+                    top: Math.floor(this.props.markerPositionTop).toString() + 'px',
                     display: this.isTodayTimeline() ? "inherit" : "none"
                   }}
                 />

@@ -19,7 +19,7 @@
       }
     }
     tr td.tv-time {
-      padding-right: 10px;
+      padding-right: 30px;
       position: relative;
       vertical-align: top;
       .time {
@@ -87,13 +87,22 @@
         }
       }
       .nowmarker {
+        &::before{
+          content: "";
+          display: block;
+          height: 7px;
+          width: 7px;
+          top: -4px;
+          right: 99.5%;
+          background-color: #ff7f6e;
+          position: absolute;
+          border-radius: 50%;
+        }
         position: absolute;
-        left: 0;
-        width: 60%;
-        top: 320px;
+        left: -2%;
+        width: 72%;
         height: 0;
-        border-top: 2px solid #ff7f6e;
-        overflow: hidden;
+        border-top: 1px solid #ff7f6e;
       }
     }
   }
