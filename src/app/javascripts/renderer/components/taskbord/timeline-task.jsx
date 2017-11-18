@@ -109,6 +109,22 @@ const timelineTask = class TimelineTask extends React.Component {
     })
   }
 
+  renderTaskTime(){
+    if (this.props.block.data.get("requiredTime") >= 60) {
+      let positionTop = this.props.block.data.get("positionTop")
+      let positionBottom = timelineUtil.getPositionBottom(this.props.block, this.props.block.data.get("requiredTime"))
+      return (
+        <span className="task-start-time">
+          {
+            timelineUtil.positionTopToTime(positionTop)
+              + '-'
+              + timelineUtil.positionTopToTime(positionBottom)
+          }
+        </span>
+      )
+    }
+  }
+
   render() {
     const { isDragging, connectDragSource, connectDragPreview, connectDropTarget, text } = this.props
 

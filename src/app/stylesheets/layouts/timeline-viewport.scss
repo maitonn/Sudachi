@@ -64,12 +64,19 @@
         }
         span {
           display: block;
-          padding: 5px 0 0 5px;
+          padding: 5px 0 0 8px;
           font-size: $font-small;
           font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-right: 10px;
           &.current-line {
             // TODO current line style.
           }
+        }
+        .task-start-time {
+          font-size: 10px;
         }
         div.resizer {
           height: 10px;
