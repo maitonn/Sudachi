@@ -1,3 +1,4 @@
+import electron from 'electron';
 import React from 'react';
 import log from 'electron-log';
 import moment from 'moment';
@@ -17,12 +18,25 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import * as Constants from '../constants';
 import * as dateListUtil from '../../../utils/date-list';
 
+const remote = electron.remote;
 const CalendarViewport = class CalendarViewport extends React.Component {
 
   updateDate(e) {
     let date = e.currentTarget.childNodes[0].childNodes[1].childNodes[3].innerHTML
     this.props.onUpdateDate(date)
     e.preventDefault()
+  }
+
+  onClickClose(){
+    remote.getCurrentWindow().hide();
+  }
+
+  onClickMinimize(){
+    remote.getCurrentWindow().minimize();
+  }
+
+  onClickFullScreen(){
+    remote.getCurrentWindow().setFullScreen(!remote.getCurrentWindow().isFullScreen())
   }
 
   clickMoreDown(e){
@@ -115,7 +129,10 @@ const CalendarViewport = class CalendarViewport extends React.Component {
             <IconButton
               iconClassName="material-icons"
               style={{
-                marginTop: '-10px'
+                marginTop: '-10px',
+                width: '35px',
+                height: '35px',
+                padding: '0'
               }}>
               arrow_drop_down
             </IconButton>
@@ -151,6 +168,11 @@ const CalendarViewport = class CalendarViewport extends React.Component {
           <Drawer
             open={this.props.showHistory}
             containerStyle={{overflow: "hidden", width: '208px'}}>
+            <div className="buttons">
+              <div className="button window-close" onClick={this.onClickClose.bind(this)}/>
+              <div className="button minimize" onClick={this.onClickMinimize.bind(this)}/>
+              <div className="button fullscreen" onClick={this.onClickFullScreen.bind(this)}/>
+            </div>
             <div className="account">
               <div className="account-main">
                 <div className="user-display-name">{this.props.currentUser ? this.props.currentUser.displayName : ''}</div>
@@ -158,7 +180,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
               </div>
               <span className="user-email">{this.props.currentUser ? this.props.currentUser.email : ''}</span>
             </div>
-            <div style={{overflow: "scroll", height: "calc(100% - 130px)"}}>
+            <div style={{overflow: "scroll", height: "calc(100% - 150px)"}}>
               {this.renderMenuItem()}
             </div>
             <div className="sync-status">

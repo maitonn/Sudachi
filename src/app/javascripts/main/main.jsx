@@ -78,6 +78,7 @@ app.on('ready', () => {
   let mainWindow = new BrowserWindow({
     width,
     height,
+    frame: false,
     show: false,
     webPreferences: {
       nodeIntegration: true
