@@ -105,6 +105,24 @@ export const getDoneTaskCount = (taskList) => {
 }
 
 /**
+ * get task which is displayed in time line.
+ *
+ * @param  {Slate} taskList
+ * @return {Array}  Blocks in Array
+ */
+
+export const getShowInTimelineTasks = (taskList) => {
+  let showInTimelineTasks = []
+  let breaker = false
+  taskList.document.nodes.map((block, i) => {
+    if (block.type == "separator") breaker = true;
+    if (breaker) return
+    if (Constants.showInTimeline.indexOf(block.type) >= 0 && block.text != "") showInTimelineTasks.push(block)
+  })
+  return showInTimelineTasks
+}
+
+/**
  * get task count which show in time line.
  *
  * @param  {State} taskList

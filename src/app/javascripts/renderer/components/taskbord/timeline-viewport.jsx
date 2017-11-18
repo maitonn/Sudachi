@@ -9,6 +9,7 @@ import TimelineCustomDragLayer from './timeline-custom-drag-layer';
 import moment from 'moment';
 import { findDOMNode } from 'react-dom';
 import * as timelineUtil from '../../../utils/timeline';
+import * as taskListUtil from '../../../utils/task-list';
 
 const TimelineViewport = class TimelineViewport extends React.Component {
 
@@ -67,25 +68,9 @@ const TimelineViewport = class TimelineViewport extends React.Component {
 
   getWidthResizedTaskList(targetTaskList){
     targetTaskList = targetTaskList || this.props.taskList
-    let displayTasks = []
-    let breaker = false
-    let taskList = targetTaskList
-    // get display task array
-    taskList.document.nodes.map((block, i) => {
-      if (block.type == "separator") breaker = true;
-      if (breaker) return
-      if (Constants.showInTimeline.indexOf(block.type) >= 0 && block.text != "") displayTasks.push(block)
-    })
-    // get task position range object
-    // key: block key
-    // value: [top, bottom]
-    let taskPositionRange = {}
-    _.each(displayTasks, (block, i) => {
-      taskPositionRange[block.key] = [
-        block.data.get("positionTop"),
-        timelineUtil.getPositionBottom(block)
-      ]
-    })
+    let displayTasks = taskListUtil.getShowInTimelineTasks(targetTaskList)
+    let taskPositionRange = timelineUtil.getTaskPositionRanges(displayTasks)
+
     let prTop, prBottom, tprTop, tprBottom
     // position range roop
     _.each(Constants.positionRange(), (pr) => {
@@ -96,18 +81,21 @@ const TimelineViewport = class TimelineViewport extends React.Component {
       _.map(taskPositionRange, (value, key) => {
         tprTop = value[0]
         tprBottom = value[1]
-        if ((prTop > tprTop && prTop < tprBottom) || (prBottom > tprTop && prBottom < tprBottom)) {
+        if ((prTop > tprTop && prTop < tprBottom)
+          || (prBottom > tprTop && prBottom < tprBottom)
+          || (prTop == tprTop && prBottom == tprBottom)
+        ) {
           resizeWidthKeyList.push(key)
         }
       })
       // resize same position task width
       if (resizeWidthKeyList.length >= 1) {
         _.each(resizeWidthKeyList, (key, i) => {
-          taskList = timelineUtil.setTaskWidth(taskList, key, 55/resizeWidthKeyList.length, i)
+          targetTaskList = timelineUtil.setTaskWidth(targetTaskList, key, 55/resizeWidthKeyList.length, i)
         })
       }
     })
-    return taskList
+    return targetTaskList
   }
 
   /**
