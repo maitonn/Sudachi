@@ -273,7 +273,6 @@ class TaskBoard extends React.Component {
     let requiredTime = 0
     let breaker = false
     let showInTimelineTaskCount = taskListUtil.getShowInTimelineTaskCount(taskList)
-    let prevShowInTimelineTaskCount = taskListUtil.getShowInTimelineTaskCount(this.state.taskList)
     if (showInTimelineTaskCount == 0) {
       return Constants.initialPositionTop
     } else {
