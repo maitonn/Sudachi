@@ -18,8 +18,6 @@ import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
 import * as auth from '../infrastructure/auth'
 import * as database from '../infrastructure/database';
-import * as storage from '../../modules/storage';
-import * as migration from '../../modules/migration';
 import { Timer } from '../../modules/timer';
 injectTapEventPlugin();
 
@@ -322,16 +320,9 @@ class TaskBoard extends React.Component {
     this.setCurrentUser(currentUser);
 
     // initialize taskList
-    taskListUtil.getInitialTaskList(currentUser, today)
+    database.fetchTaskList(currentUser.uid, today)
       .then(
-        (res) => {
-          this.updateTask(res.taskList)
-          // remove stored prev taskList file.
-          storage.removePrevTaskListByDisplayName(currentUser.displayName)
-        }
-      )
-      .catch(
-        (error) => { this.updateTask(initialTaskList) }
+        (res) => { this.updateTask(res.taskList) }
       )
   }
 

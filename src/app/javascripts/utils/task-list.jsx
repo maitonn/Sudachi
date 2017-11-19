@@ -3,7 +3,6 @@ import { ipcRenderer } from 'electron';
 import * as taskEditorUtil from './task-editor';
 import * as Constants from '../renderer/components/constants';
 import * as database from '../renderer/infrastructure/database'
-import * as storage from '../modules/storage'
 const initialData = require("../../data/initial.json")
 const log = require('electron-log');
 
@@ -226,58 +225,4 @@ export const updateCurrentFlag = (taskList) => {
       )
   })
   return transform.apply()
-}
-
-/**
- * get initial taskList.
- *
- * @param  {User} currentUser
- * @param  {String} date YYYYMMDD
- * @return {Promise}      if resolve, containing taskList.
- */
-export const getInitialTaskList = (currentUser, date) => {
-  // TODO this code is called by only v0.2.2.
-  return storage.getPrevTaskList(currentUser.displayName)
-    .then(
-      (res) => {
-        log.info('PREV FILE EXSIST.');
-        return mergePrevTaskList(currentUser, res.taskList, date)
-      }
-    )
-    .catch(
-      (error) => {
-        if (error.type == 'PathNotExistsError') {
-          return database.fetchTaskList(currentUser.uid, date)
-        }
-      }
-    )
-}
-
-/**
- * get taskList from date and prevTaskList which created from prev.json
- * if date of prev taskList equals argument date, return prev taskList,
- * else save prev taskList to firestore and retrieve taskList of argument date.
- *
- * @param  {User}  currentUser
- * @param  {Slate} prevTaskList
- * @param  {String} date         YYYYMMDD
- * @return {Promise}              containing taskList
- */
-
-export const mergePrevTaskList = (currentUser, prevTaskList, date) => {
-  let prevTaskListDate = prevTaskList.document.data.get('date')
-  if (prevTaskListDate == date) {
-    log.info('TODAY\'S PREV FILE EXIST, DATE: ', date)
-    return { taskList: prevTaskList }
-  } else {
-    log.info('SAVE PREV FILE TO FIRESTORE, DATE: ', prevTaskListDate)
-    // store prev taskList
-    return database.storeTaskList(currentUser.uid, prevTaskListDate, prevTaskList)
-      .then(
-        () => {
-          // retrieve today's taskList.
-          return database.fetchTaskList(currentUser.uid, date)
-        }
-      )
-  }
 }
