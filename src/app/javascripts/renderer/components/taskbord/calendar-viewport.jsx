@@ -180,7 +180,7 @@ const CalendarViewport = class CalendarViewport extends React.Component {
               </div>
               <span className="user-email">{this.props.currentUser ? this.props.currentUser.email : ''}</span>
             </div>
-            <div style={{overflow: "scroll", height: "calc(100% - 150px)"}}>
+            <div style={{overflow: "scroll", height: "calc(100% - 145px)"}}>
               {this.renderMenuItem()}
             </div>
             <div className="sync-status">
