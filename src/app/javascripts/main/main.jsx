@@ -78,6 +78,7 @@ app.on('ready', () => {
   let mainWindow = new BrowserWindow({
     width,
     height,
+    frame: false,
     show: false,
     webPreferences: {
       nodeIntegration: true
@@ -186,7 +187,7 @@ autoUpdater.on('update-available', (info) => {
 })
 
 autoUpdater.on('error', (ev, err) => {
-  dialog.showErrorBox('Error: ', err == null ? "unknown" : (err.stack || err).toString())
+  log.error('Error: ', err == null ? "unknown" : (err.stack || err).toString())
 })
 
 autoUpdater.on('download-progress', (progressObj) => {

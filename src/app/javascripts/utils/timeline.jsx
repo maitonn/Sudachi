@@ -1,6 +1,7 @@
 import * as Constants from '../renderer/components/constants';
 import { Block} from 'slate';
 import * as taskEditorUtil from './task-editor';
+import _ from 'lodash';
 
 /**
  * get task position bottom.
@@ -144,4 +145,22 @@ export const setTaskWidth = (taskList, taskKey, width, index) => {
     )
 
   return transform.apply()
+}
+
+/**
+ * get task position range objects
+ *
+ * @param  {Array} displayTasks Block in Array
+ * @return {objects}  key: Block key, value: [top, bottom]
+ */
+
+export const getTaskPositionRanges = (displayTasks) => {
+  let taskPositionRange = {}
+  _.each(displayTasks, (block, i) => {
+    taskPositionRange[block.key] = [
+      block.data.get("positionTop"),
+      getPositionBottom(block)
+    ]
+  })
+  return taskPositionRange
 }

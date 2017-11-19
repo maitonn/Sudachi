@@ -1,10 +1,40 @@
 #calendar-viewport {
+  div.buttons {
+    height: 30px;
+    background-color: #3A3A3A;
+    padding: 12px 0 0 12px;
+    &:hover {
+      .window-close {
+        background: url("../../images/close.png") no-repeat center center;
+        background-size: 50% 50%;
+      }
+      .minimize {
+        background: url("../../images/minimize.png") no-repeat center center;
+        background-size: 50% 20%;
+      }
+      .fullscreen {
+        background: url("../../images/fullscreen.png") no-repeat center center;
+        background-size: 50% 50%;
+      }
+    }
+    .button {
+      height: 12px;
+      width: 12px;
+      border-radius: 50%;
+      background-color: white;
+      display: inline-block;
+      margin-right: 10px;
+      &.window-close { background-color: #EC7F7F }
+      &.minimize { background-color: #ECC47F }
+      &.fullscreen { background-color: #58AD45 }
+    }
+  }
   div.account {
     padding: 15px;
     background-color: #3A3A3A;
     .account-main {display: flex;}
     .user-display-name {
-      margin: 10px auto;
+      margin: 0 auto 10px;
       flex: 1 0 100px;
       text-overflow: ellipsis;
       font-size: 15px;
@@ -53,5 +83,20 @@
   div.down {
     background: url("../../images/arrow_down.png") no-repeat center center;
     background-size: 27px 7px;
+  }
+  div.sync-status{
+    padding: 15px 15px;
+    background-color: #3A3A3A;
+    .sync-status-label {
+      font-size: 12px;
+      display: inline-block;
+      color: #9B9B9B;
+    }
+    .material-icons {
+      font-size: 15px;
+      vertical-align: middle;
+      margin-right: 8px;
+      color: #9B9B9B;
+    }
   }
 }
