@@ -187,7 +187,7 @@ autoUpdater.on('update-available', (info) => {
 })
 
 autoUpdater.on('error', (ev, err) => {
-  dialog.showErrorBox('Error: ', err == null ? "unknown" : (err.stack || err).toString())
+  log.error('Error: ', err == null ? "unknown" : (err.stack || err).toString())
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
