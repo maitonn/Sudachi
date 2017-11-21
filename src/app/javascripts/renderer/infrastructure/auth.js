@@ -3,7 +3,7 @@ import firebaseApp from './firebase-app';
 import AppFirestore from './database';
 const auth = firebaseApp.auth();
 const shouldEnablePersistence = false
-const database = new AppFirestore(false)
+const database = new AppFirestore(shouldEnablePersistence)
 
 /**
  * sign in with email and password.
