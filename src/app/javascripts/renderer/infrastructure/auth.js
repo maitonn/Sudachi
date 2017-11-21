@@ -1,7 +1,9 @@
 import log from 'electron-log';
 import firebaseApp from './firebase-app';
-import * as database from './database';
+import AppFirestore from './database';
 const auth = firebaseApp.auth();
+const shouldEnablePersistence = false
+const database = new AppFirestore(false)
 
 /**
  * sign in with email and password.

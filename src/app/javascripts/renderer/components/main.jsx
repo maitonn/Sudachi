@@ -17,7 +17,7 @@ import * as Constants from './constants';
 import * as dateListUtil from '../../utils/date-list';
 import * as taskListUtil from '../../utils/task-list';
 import * as auth from '../infrastructure/auth'
-import * as database from '../infrastructure/database';
+import AppFirestore from '../infrastructure/database';
 import { Timer } from '../../modules/timer';
 injectTapEventPlugin();
 
@@ -40,6 +40,8 @@ const taskBoardDefaultState = {
   syncStatus: Constants.syncStatuses.synced,
   syncedAt: moment().format('YYYY/MM/DD hh:mm:ss')
 }
+const shouldEnablePersistence = true
+const database = new AppFirestore(shouldEnablePersistence)
 
 const taskBoardReducer = (state = taskBoardDefaultState, action) => {
   switch (action.type) {
@@ -357,6 +359,7 @@ class TaskBoard extends React.Component {
               showHowto={this.state.showHowto}
               markerPositionTop={this.state.markerPositionTop}
               currentUser={this.state.currentUser}
+              database={database}
             />
             <TimelineViewport
               date={this.state.date}

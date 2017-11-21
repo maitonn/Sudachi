@@ -7,7 +7,6 @@ import { dialog, remote } from 'electron';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FlatButton from 'material-ui/FlatButton';
 import * as taskListUtil from '../../../utils/task-list';
-import * as database from '../../infrastructure/database';
 import initialTaskList from '../../../../data/initial.json';
 
 const TaskViewport = class TaskViewport extends React.Component {
@@ -38,7 +37,7 @@ const TaskViewport = class TaskViewport extends React.Component {
         const taskListWithoutDoneTask = taskListUtil.getTaskListWithoutDoneTask(this.props.taskList)
         this.props.onUpdateTask(taskListOnlyDoneTask)
         this.props.saveTaskList(this.props.date, taskListOnlyDoneTask)
-        database.fetchTaskList(this.props.currentUser.uid, tomorrow)
+        this.props.database.fetchTaskList(this.props.currentUser.uid, tomorrow)
           .then(
             (res) => {
               let tomorrowTaskList = res.taskList;

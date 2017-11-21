@@ -2,7 +2,6 @@ import { Raw, Block } from 'slate';
 import { ipcRenderer } from 'electron';
 import * as taskEditorUtil from './task-editor';
 import * as Constants from '../renderer/components/constants';
-import * as database from '../renderer/infrastructure/database'
 const initialData = require("../../data/initial.json")
 const log = require('electron-log');
 
