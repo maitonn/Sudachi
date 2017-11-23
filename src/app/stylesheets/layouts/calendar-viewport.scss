@@ -1,8 +1,16 @@
+#sidebar-viewport {
+  padding: 0;
+  .sidebar-header {
+    height: 40px;
+    -webkit-app-region: drag;
+  }
+}
 #calendar-viewport {
   div.buttons {
     height: 30px;
     background-color: #3A3A3A;
     padding: 12px 0 0 12px;
+    -webkit-app-region: drag;
     &:hover {
       .window-close {
         background: url("../../images/close.png") no-repeat center center;
@@ -30,7 +38,7 @@
     }
   }
   div.account {
-    padding: 15px;
+    padding: 20px 15px;
     background-color: #3A3A3A;
     .account-main {display: flex;}
     .user-display-name {

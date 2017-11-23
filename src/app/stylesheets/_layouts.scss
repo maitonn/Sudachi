@@ -1,4 +1,7 @@
-body { height:100%; }
+body {
+  height:100%;
+  -webkit-user-drag: none;
+}
 header,footer { height:0; }
 header {
   .btn-google {

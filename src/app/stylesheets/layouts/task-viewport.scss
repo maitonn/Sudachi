@@ -1,5 +1,5 @@
 #task-viewport {
-  padding: 60px 30px 40px;
+  padding-bottom: 40px;
   outline: none;
   .menu {
     margin-bottom: 30px;
@@ -12,8 +12,13 @@
   .button[data-active="true"] {
     color: $dark-gray;
   }
+  .editor-header {
+    height: 50px;
+    -webkit-app-region: drag;
+  }
   .editor-area {
     height: 90%;
+    margin-left: 15px;
     overflow-y: scroll;
     overflow-x: hidden;
   }
@@ -104,7 +109,6 @@
     line-height: 1.1;
   }
   div.task-viewport-buttons {
-    margin-top: 40px;
     width: 100%;
     bottom: 0;
     div {

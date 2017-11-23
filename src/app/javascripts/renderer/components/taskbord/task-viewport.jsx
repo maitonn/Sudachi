@@ -110,6 +110,7 @@ const TaskViewport = class TaskViewport extends React.Component {
   render() {
     return (
       <div id="task-viewport" className="col-md-5 col-sm-6">
+        <div className="editor-header"></div>
         <div className="editor-area" onClick={this.onClickEditorArea.bind(this)}>
           <div className="title">
             <span>{this.editorTitle()}</span>

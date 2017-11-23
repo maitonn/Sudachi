@@ -1,5 +1,6 @@
 .button {
   cursor: pointer;
+  -webkit-app-region: no-drag;
 }
 .btn {
   &.btn-primary {

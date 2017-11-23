@@ -1,16 +1,23 @@
 #timeline-viewport {
-  margin-top: 115px;
   padding: 0 0 0 70px;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  height: 80%;
+  height: 92%;
+  .timeline-header {
+    height: 115px;
+    -webkit-app-region: drag;
+  }
+  .timeline-tasks {
+    height: 88%;
+    position: relative;
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
   table { table-layout: fixed }
   table tbody {
     tr td.tv-marker {
       position: absolute;
       width: 100%;
       .markercell {
-        width: 70%;
+        width: 75%;
         height: 25px;
         font-size: 1px;
       }
@@ -44,7 +51,7 @@
         cursor: move;
         position: absolute;
         left: -1px;
-        width: 55%;
+        width: 58%;
         height: 50px;
         background-color: $primary-indigo;
         color: #FFF;

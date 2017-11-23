@@ -18,7 +18,7 @@ const timelineTaskDragPreview = class TimelineTask extends React.Component {
   setTaskStyle(data) {
     let top = data.get("positionTop", 500)
     let height = Constants.heightPerHour * data.get("requiredTime", 60) / 60
-    let width = data.get("width", 55)
+    let width = data.get("width", Constants.defaultTaskWidth)
     let marginLeft = data.get("marginLeft", 0)
     let taskStyle = {
       height: height.toString() + 'px',

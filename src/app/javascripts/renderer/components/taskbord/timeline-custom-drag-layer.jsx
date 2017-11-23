@@ -26,7 +26,7 @@ function getItemStyles(props) {
   return {
     transform: transform,
     WebkitTransform: transform,
-    width: '657px'
+    width: '587px'
   };
 }
 

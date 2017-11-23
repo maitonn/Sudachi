@@ -158,37 +158,40 @@ const CalendarViewport = class CalendarViewport extends React.Component {
 
   render() {
     return (
-      <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
-      {/* <MuiThemeProvider> */}
-        <div id="calendar-viewport" className="col-md-2 hidden-sm hidden-xs">
-          <RaiseButton
-            label="history"
-            onTouchTap={this.props.showHistoryMenu.bind(this)}
-          />
-          <Drawer
-            open={this.props.showHistory}
-            containerStyle={{overflow: "hidden", width: '208px'}}>
-            <div className="buttons">
-              <div className="button window-close" onClick={this.onClickClose.bind(this)}/>
-              <div className="button minimize" onClick={this.onClickMinimize.bind(this)}/>
-              <div className="button fullscreen" onClick={this.onClickFullScreen.bind(this)}/>
-            </div>
-            <div className="account">
-              <div className="account-main">
-                <div className="user-display-name">{this.props.currentUser ? this.props.currentUser.displayName : ''}</div>
-                {this.renderDropdownButton()}
+      <div id="sidebar-viewport" className="col-md-2 hidden-sm hidden-xs">
+        <div className="sidebar-header"></div>
+        <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
+        {/* <MuiThemeProvider> */}
+          <div id="calendar-viewport" className="">
+            <RaiseButton
+              label="history"
+              onTouchTap={this.props.showHistoryMenu.bind(this)}
+            />
+            <Drawer
+              open={this.props.showHistory}
+              containerStyle={{overflow: "hidden", width: '208px'}}>
+              <div className="buttons">
+                <div className="button window-close" onClick={this.onClickClose.bind(this)}/>
+                <div className="button minimize" onClick={this.onClickMinimize.bind(this)}/>
+                <div className="button fullscreen" onClick={this.onClickFullScreen.bind(this)}/>
               </div>
-              <span className="user-email">{this.props.currentUser ? this.props.currentUser.email : ''}</span>
-            </div>
-            <div style={{overflow: "scroll", height: "calc(100% - 145px)"}}>
-              {this.renderMenuItem()}
-            </div>
-            <div className="sync-status">
-              <span className="material-icons">{this.isSyncing() ? 'cached' : 'done'}</span><span className="sync-status-label">{this.syncStateLabel()}</span>
-            </div>
-          </Drawer>
-        </div>
-      </MuiThemeProvider>
+              <div className="account">
+                <div className="account-main">
+                  <div className="user-display-name">{this.props.currentUser ? this.props.currentUser.displayName : ''}</div>
+                  {this.renderDropdownButton()}
+                </div>
+                <span className="user-email">{this.props.currentUser ? this.props.currentUser.email : ''}</span>
+              </div>
+              <div style={{overflow: "scroll", height: "calc(100% - 155px)"}}>
+                {this.renderMenuItem()}
+              </div>
+              <div className="sync-status">
+                <span className="material-icons">{this.isSyncing() ? 'cached' : 'done'}</span><span className="sync-status-label">{this.syncStateLabel()}</span>
+              </div>
+            </Drawer>
+          </div>
+        </MuiThemeProvider>
+      </div>
     );
   }
 }

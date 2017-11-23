@@ -91,7 +91,7 @@ const TimelineViewport = class TimelineViewport extends React.Component {
       // resize same position task width
       if (resizeWidthKeyList.length >= 1) {
         _.each(resizeWidthKeyList, (key, i) => {
-          targetTaskList = timelineUtil.setTaskWidth(targetTaskList, key, 55/resizeWidthKeyList.length, i)
+          targetTaskList = timelineUtil.setTaskWidth(targetTaskList, key, Constants.defaultTaskWidth/resizeWidthKeyList.length, i)
         })
       }
     })
@@ -152,50 +152,53 @@ const TimelineViewport = class TimelineViewport extends React.Component {
 
   render() {
     return (
-      <div id="timeline-viewport" className="col-md-5 col-sm-6 hidden-xs" ref="timeline">
-        <table>
-          <tbody>
-            <tr className="">
-              <td className="tv-time">
-                {_.map(_.range(0, 25), (t, i) => {
-                  return <div key={i} className="time">{t + ":" + "00"}</div>
-                })}
-                <div
-                  className="dragTargetTime"
-                  style={{
-                    top: this.props.dragTargetPositionTop.toString() + 'px'
-                  }}
-                ><span>{timelineUtil.positionTopToTime(this.props.dragTargetPositionTop)}</span></div>
-              </td>
-              <td className="tv-task tv-marker">
-                {_.map(_.range(1, 50), (m, i) => {
-                  let style = (this.props.markerPositionTop > (i+1)*25) && this.isTodayTimeline() ? {backgroundColor: "rgba(250,250,250,0.7)"} : {}
-                  return (
-                    <Marker
-                      key={i}
-                      className={i % 2 == 0 ? "markercell marker-border" : "markercell"}
-                      showDragTargetTime={this.showDragTargetTime.bind(this)}
-                      moveTask={this.moveTask.bind(this)}
-                      resizeTaskHeight={this.resizeTaskHeight.bind(this)}
-                      dragTargetPositionTop={this.props.dragTargetPositionTop}
-                      positionTop={i*25}
-                      style={style}
-                    />
-                  );
-                })}
-                {this.renderTasks()}
-                <TimelineCustomDragLayer />
-                <div
-                  className="nowmarker"
-                  style={{
-                    top: Math.floor(this.props.markerPositionTop).toString() + 'px',
-                    display: this.isTodayTimeline() ? "inherit" : "none"
-                  }}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div id="timeline-viewport" className="col-md-5 col-sm-6 hidden-xs">
+        <div className="timeline-header"></div>
+        <div className="timeline-tasks" ref="timeline">
+          <table>
+            <tbody>
+              <tr className="">
+                <td className="tv-time">
+                  {_.map(_.range(0, 25), (t, i) => {
+                    return <div key={i} className="time">{t + ":" + "00"}</div>
+                  })}
+                  <div
+                    className="dragTargetTime"
+                    style={{
+                      top: this.props.dragTargetPositionTop.toString() + 'px'
+                    }}
+                  ><span>{timelineUtil.positionTopToTime(this.props.dragTargetPositionTop)}</span></div>
+                </td>
+                <td className="tv-task tv-marker">
+                  {_.map(_.range(1, 50), (m, i) => {
+                    let style = (this.props.markerPositionTop > (i+1)*25) && this.isTodayTimeline() ? {backgroundColor: "rgba(250,250,250,0.7)"} : {}
+                    return (
+                      <Marker
+                        key={i}
+                        className={i % 2 == 0 ? "markercell marker-border" : "markercell"}
+                        showDragTargetTime={this.showDragTargetTime.bind(this)}
+                        moveTask={this.moveTask.bind(this)}
+                        resizeTaskHeight={this.resizeTaskHeight.bind(this)}
+                        dragTargetPositionTop={this.props.dragTargetPositionTop}
+                        positionTop={i*25}
+                        style={style}
+                      />
+                    );
+                  })}
+                  {this.renderTasks()}
+                  <TimelineCustomDragLayer />
+                  <div
+                    className="nowmarker"
+                    style={{
+                      top: Math.floor(this.props.markerPositionTop).toString() + 'px',
+                      display: this.isTodayTimeline() ? "inherit" : "none"
+                    }}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }

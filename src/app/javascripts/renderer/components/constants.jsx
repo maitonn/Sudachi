@@ -23,6 +23,7 @@ export const showInTimeline = [
 
 export const initialPositionTop = 450
 export const initialDragTargetPositionTop = -99999
+export const defaultTaskWidth = 58 // %
 
 export const initialDateList = () => {
   let dateList = []
