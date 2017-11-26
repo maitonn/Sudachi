@@ -1,7 +1,6 @@
 import React from 'react';
 import { Editor, Raw, Data } from 'slate'
-import moment from 'moment'
-import { ipcRenderer } from 'electron'
+import _ from 'lodash';
 import CheckListItem from './check-lists'
 import * as Constants from '../constants'
 import * as TaskEditorUtil from '../../../utils/task-editor'
@@ -23,14 +22,26 @@ const TaskEditor = class TaskEditor extends React.Component {
         'heading-one': props => <h1>{props.children}</h1>,
         'heading-two': props => <h2>{props.children}</h2>,
         'heading-three': props => <h3>{props.children}</h3>,
-        'heading-four': props => <h4>{props.children}</h4>,
-        'heading-five': props => <h5>{props.children}</h5>,
-        'heading-six': props => <h6>{props.children}</h6>,
         'list-item': props => <li className={'indent' + props.node.data.get('indent')}>{props.children}</li>,
         'check-list-item': CheckListItem,
         'separator' : props => <div className="separator-line" contentEditable={false}><span className="separator"><span></span></span></div>
       }
     }
+  }
+
+  /**
+   * get sliced chars list
+   *
+   * @param  {String} chars
+   * @return {Array}
+   */
+
+  getSlicedCharsList(chars) {
+    let slicedCharsList = []
+    _.each(_.range(1, 4), (end, i) => {
+      slicedCharsList.push(chars.slice(0, end))
+    })
+    return slicedCharsList
   }
 
   /**
@@ -41,20 +52,18 @@ const TaskEditor = class TaskEditor extends React.Component {
    */
 
   getType(chars){
+    let slicedCharsList = this.getSlicedCharsList(chars)
     switch (true) {
-      case /---/.test(chars): return 'separator'
-      case /\*/.test(chars):
-      case /-/.test(chars):
-      case /\+/.test(chars): return 'list-item'
-      case /\[\]/.test(chars): return 'check-list-item'
-      case /\[X\]/.test(chars): return 'checked-list-item'
-      case />/.test(chars): return 'block-quote'
-      case /######/.test(chars): return 'heading-six'
-      case /#####/.test(chars): return 'heading-five'
-      case /####/.test(chars): return 'heading-four'
-      case /###/.test(chars): return 'heading-three'
-      case /##/.test(chars): return 'heading-two'
-      case /#/.test(chars): return 'heading-one'
+      case /---/.test(slicedCharsList[2]): return 'separator'
+      case /\[\]/.test(slicedCharsList[1]): return 'check-list-item'
+      case /\[X\]/.test(slicedCharsList[2]): return 'checked-list-item'
+      case /\*/.test(slicedCharsList[0]):
+      case /-/.test(slicedCharsList[0]):
+      case /\+/.test(slicedCharsList[0]): return 'list-item'
+      case />/.test(slicedCharsList[0]): return 'block-quote'
+      case /###/.test(slicedCharsList[2]): return 'heading-three'
+      case /##/.test(slicedCharsList[1]): return 'heading-two'
+      case /#/.test(slicedCharsList[0]): return 'heading-one'
       default: return null
     }
   }
@@ -218,7 +227,9 @@ const TaskEditor = class TaskEditor extends React.Component {
   onSpace(e, state) {
     if (state.isExpanded) return
     const { startBlock, startOffset } = state
-    const chars = startBlock.text.slice(0, startOffset).replace(/\s*/g, '')
+    let chars = startBlock.text.slice(0, startOffset)
+    if (chars.length > 5) return
+    chars = chars.replace(/\s*/g, '')
     let type = this.getType(chars)
 
     if (!type) return
@@ -331,9 +342,6 @@ const TaskEditor = class TaskEditor extends React.Component {
       startBlock.type != 'heading-one' &&
       startBlock.type != 'heading-two' &&
       startBlock.type != 'heading-three' &&
-      startBlock.type != 'heading-four' &&
-      startBlock.type != 'heading-five' &&
-      startBlock.type != 'heading-six' &&
       startBlock.type != 'check-list-item' &&
       startBlock.type != 'block-quote'
     ) {
